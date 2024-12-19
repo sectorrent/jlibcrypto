@@ -8,7 +8,6 @@ import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPublicKey.SPX_PK_BYTE
 public class SphincsPlusPrivateKey implements PrivateKey {
 
     public static final int SPX_SK_BYTES = (2*SPX_N+SPX_PK_BYTES);
-
     private final byte[] privateKey;
 
     public SphincsPlusPrivateKey(byte[] privateKey){

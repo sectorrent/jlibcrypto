@@ -4,8 +4,8 @@ import java.security.Provider;
 
 public class STCrypto extends Provider {
 
-    public STCrypto() {
-        super("STCryptoProvider", 1.0, "Quantum Proof Cryptographic Provider");
+    public STCrypto(){
+        super("SPHINCSPLUS", 1.0, "Quantum Proof Cryptographic Provider");
 
         // Register SPHINCS+ Signature
         put("Signature.SPHINCSPLUS", "org.sectorrent.jlibcrypto.sphincs.SphincsPlusSignature");

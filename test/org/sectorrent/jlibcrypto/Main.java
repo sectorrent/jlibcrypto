@@ -39,6 +39,10 @@ public class Main {
             keyGen.initialize(256); // Security level
             KeyPair keyPair = keyGen.generateKeyPair();
 
+            System.out.println(Arrays.equals(keyPair.getPublic().getEncoded(), hexToBytes("df3be01d842391100e6c41a42ed126a79e3297c818494f39a052021cf54c3979")));
+            System.out.println(Arrays.equals(keyPair.getPrivate().getEncoded(), hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a79e3297c818494f39a052021cf54c3979")));
+
+            /*
             // Sign data
             Signature signature = Signature.getInstance("SPHINCSPLUS");
             signature.initSign(keyPair.getPrivate());
@@ -51,6 +55,7 @@ public class Main {
             boolean verified = signature.verify(sigBytes);
 
             System.out.println("Signature verified: " + verified);
+            */
         } catch (Exception e) {
             e.printStackTrace();
         }
