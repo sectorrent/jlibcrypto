@@ -3,7 +3,6 @@ package org.sectorrent.jlibcrypto;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.*;
 import java.util.Arrays;
-import java.util.Base64;
 
 public class Main {
 
