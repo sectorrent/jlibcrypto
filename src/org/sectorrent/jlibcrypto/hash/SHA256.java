@@ -1,6 +1,10 @@
-package org.sectorrent.jlibcrypto.sphincs;
+package org.sectorrent.jlibcrypto.hash;
 
-public class Sha256 extends BaseHash {
+import java.security.MessageDigest;
+
+public class SHA256 extends MessageDigest {
+
+    private static final int BLOCK_SIZE = 64;
 
     private static final int[] k = {
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
@@ -21,56 +25,127 @@ public class Sha256 extends BaseHash {
             0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     };
 
-    private static final int BLOCK_SIZE = 64;
-
     private static final int[] w = new int[64];
 
-    private int h0, h1, h2, h3, h4, h5, h6, h7;
+    private int[] h = {
+            0x6a09e667,
+            0xbb67ae85,
+            0x3c6ef372,
+            0xa54ff53a,
+            0x510e527f,
+            0x9b05688c,
+            0x1f83d9ab,
+            0x5be0cd19
+    };
 
-    public Sha256(){
-        super("SHA-256", 32, BLOCK_SIZE);
+    private byte[] buffer = new byte[BLOCK_SIZE];
+    private int initialCount = 0, count = 0;
+
+    public SHA256(){
+        super("SHA-256");
     }
 
-    public Sha256(byte[] state, int count){
-        super("SHA-256", 32, BLOCK_SIZE);
-        this.h0 = parseInt(state, 0);
-        this.h1 = parseInt(state, 4);
-        this.h2 = parseInt(state, 8);
-        this.h3 = parseInt(state, 12);
-        this.h4 = parseInt(state, 16);
-        this.h5 = parseInt(state, 20);
-        this.h6 = parseInt(state, 24);
-        this.h7 = parseInt(state, 28);
+    public SHA256(byte[] state, int count){
+        super("SHA-256");
+        this.h[0] = parseInt(state, 0);
+        this.h[1] = parseInt(state, 4);
+        this.h[2] = parseInt(state, 8);
+        this.h[3] = parseInt(state, 12);
+        this.h[4] = parseInt(state, 16);
+        this.h[5] = parseInt(state, 20);
+        this.h[6] = parseInt(state, 24);
+        this.h[7] = parseInt(state, 28);
+        this.initialCount = count;
         this.count = count;
     }
 
-    public void completeBlock(){
+    @Override
+    protected void engineUpdate(byte input){
+        int i = (int) (count%BLOCK_SIZE);
+        count++;
+        buffer[i] = input;
+
+        if(i == (BLOCK_SIZE-1)){
+            transform(buffer, 0);
+        }
+    }
+
+    @Override
+    protected void engineUpdate(byte[] input, int offset, int len){
+        int n = (int) (count%BLOCK_SIZE);
+        count += len;
+        int partLen = BLOCK_SIZE-n;
+        int i = 0;
+
+        if(len >= partLen){
+            System.arraycopy(input, offset, buffer, n, partLen);
+            transform(buffer, 0);
+            for(i = partLen; i+BLOCK_SIZE-1 < len; i += BLOCK_SIZE){
+                transform(input, offset+i);
+            }
+
+            n = 0;
+        }
+
+        if(i < len){
+            System.arraycopy(input, offset+i, buffer, n, len-i);
+        }
+    }
+
+    @Override
+    protected byte[] engineDigest(){
+        byte[] tail = padBuffer();
+        engineUpdate(tail, 0, tail.length);
+        byte[] result = getResult();
+        engineReset();
+
+        return result;
+    }
+
+    @Override
+    protected void engineReset(){
+        buffer = new byte[BLOCK_SIZE];
+        h = new int[]{
+                0x6a09e667,
+                0xbb67ae85,
+                0x3c6ef372,
+                0xa54ff53a,
+                0x510e527f,
+                0x9b05688c,
+                0x1f83d9ab,
+                0x5be0cd19
+        };
+        count = initialCount;
+    }
+
+    private void completeBlock(){
         byte[] tail = padBuffer();
         update(tail, 0, tail.length);
     }
 
     public byte[] getState(){
         byte[] res = new byte[40];
-        storeInt(res, 0, h0);
-        storeInt(res, 4, h1);
-        storeInt(res, 8, h2);
-        storeInt(res, 12, h3);
-        storeInt(res, 16, h4);
-        storeInt(res, 20, h5);
-        storeInt(res, 24, h6);
-        storeInt(res, 28, h7);
+        storeInt(res, 0, h[0]);
+        storeInt(res, 4, h[1]);
+        storeInt(res, 8, h[2]);
+        storeInt(res, 12, h[3]);
+        storeInt(res, 16, h[4]);
+        storeInt(res, 20, h[5]);
+        storeInt(res, 24, h[6]);
+        storeInt(res, 28, h[7]);
         storeBigendianLong(res, 32, count);
+
         return res;
     }
 
-    private static int parseInt(byte[] data, int offset){
+    private int parseInt(byte[] data, int offset){
         return data[offset+3] & 0xFF |
                 ((data[offset+2] & 0xFF) << 8) |
                 ((data[offset + 1] & 0xFF) << 16) |
                 ((data[offset+0] & 0xFF) << 24);
     }
 
-    private static void storeInt(byte[] data, int offset, int val){
+    private void storeInt(byte[] data, int offset, int val){
         data[offset+0] = (byte)(val >> 24);
         data[offset+1] = (byte)(val >> 16);
         data[offset+2] = (byte)(val >> 8);
@@ -83,42 +158,23 @@ public class Sha256 extends BaseHash {
         }
     }
 
-    private Sha256(Sha256 md){
-        this();
-
-        this.h0 = md.h0;
-        this.h1 = md.h1;
-        this.h2 = md.h2;
-        this.h3 = md.h3;
-        this.h4 = md.h4;
-        this.h5 = md.h5;
-        this.h6 = md.h6;
-        this.h7 = md.h7;
-        this.count = md.count;
-        System.arraycopy(md.buffer, 0, this.buffer, 0, md.buffer.length);
-    }
-
     public static final int[] G(int hh0, int hh1, int hh2, int hh3, int hh4, int hh5, int hh6, int hh7, byte[] in, int offset){
         return sha(hh0, hh1, hh2, hh3, hh4, hh5, hh6, hh7, in, offset);
     }
 
-    public Object clone(){
-        return new Sha256(this);
+    private void transform(byte[] in, int offset){
+        int[] result = sha(h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], in, offset);
+        h[0] = result[0];
+        h[1] = result[1];
+        h[2] = result[2];
+        h[3] = result[3];
+        h[4] = result[4];
+        h[5] = result[5];
+        h[6] = result[6];
+        h[7] = result[7];
     }
 
-    protected void transform(byte[] in, int offset){
-        int[] result = sha(h0, h1, h2, h3, h4, h5, h6, h7, in, offset);
-        h0 = result[0];
-        h1 = result[1];
-        h2 = result[2];
-        h3 = result[3];
-        h4 = result[4];
-        h5 = result[5];
-        h6 = result[6];
-        h7 = result[7];
-    }
-
-    protected byte[] padBuffer(){
+    private byte[] padBuffer(){
         int n = (int)(count % BLOCK_SIZE);
         int padding = (n < 56) ? (56-n) : (120 - n);
         byte[] result = new byte[padding+8];
@@ -137,31 +193,20 @@ public class Sha256 extends BaseHash {
         return result;
     }
 
-    protected byte[] getResult(){
+    private byte[] getResult(){
         return new byte[]{
-                (byte)(h0 >>> 24), (byte)(h0 >>> 16), (byte)(h0 >>> 8), (byte) h0,
-                (byte)(h1 >>> 24), (byte)(h1 >>> 16), (byte)(h1 >>> 8), (byte) h1,
-                (byte)(h2 >>> 24), (byte)(h2 >>> 16), (byte)(h2 >>> 8), (byte) h2,
-                (byte)(h3 >>> 24), (byte)(h3 >>> 16), (byte)(h3 >>> 8), (byte) h3,
-                (byte)(h4 >>> 24), (byte)(h4 >>> 16), (byte)(h4 >>> 8), (byte) h4,
-                (byte)(h5 >>> 24), (byte)(h5 >>> 16), (byte)(h5 >>> 8), (byte) h5,
-                (byte)(h6 >>> 24), (byte)(h6 >>> 16), (byte)(h6 >>> 8), (byte) h6,
-                (byte)(h7 >>> 24), (byte)(h7 >>> 16), (byte)(h7 >>> 8), (byte) h7
+                (byte)(h[0] >>> 24), (byte)(h[0] >>> 16), (byte)(h[0] >>> 8), (byte) h[0],
+                (byte)(h[1] >>> 24), (byte)(h[1] >>> 16), (byte)(h[1] >>> 8), (byte) h[1],
+                (byte)(h[2] >>> 24), (byte)(h[2] >>> 16), (byte)(h[2] >>> 8), (byte) h[2],
+                (byte)(h[3] >>> 24), (byte)(h[3] >>> 16), (byte)(h[3] >>> 8), (byte) h[3],
+                (byte)(h[4] >>> 24), (byte)(h[4] >>> 16), (byte)(h[4] >>> 8), (byte) h[4],
+                (byte)(h[5] >>> 24), (byte)(h[5] >>> 16), (byte)(h[5] >>> 8), (byte) h[5],
+                (byte)(h[6] >>> 24), (byte)(h[6] >>> 16), (byte)(h[6] >>> 8), (byte) h[6],
+                (byte)(h[7] >>> 24), (byte)(h[7] >>> 16), (byte)(h[7] >>> 8), (byte) h[7]
         };
     }
 
-    protected void resetContext(){
-        h0 = 0x6a09e667;
-        h1 = 0xbb67ae85;
-        h2 = 0x3c6ef372;
-        h3 = 0xa54ff53a;
-        h4 = 0x510e527f;
-        h5 = 0x9b05688c;
-        h6 = 0x1f83d9ab;
-        h7 = 0x5be0cd19;
-    }
-
-    private static synchronized final int[] sha(int hh0, int hh1, int hh2, int hh3, int hh4, int hh5, int hh6, int hh7, byte[] in, int offset){
+    private static synchronized int[] sha(int hh0, int hh1, int hh2, int hh3, int hh4, int hh5, int hh6, int hh7, byte[] in, int offset){
         int A = hh0;
         int B = hh1;
         int C = hh2;

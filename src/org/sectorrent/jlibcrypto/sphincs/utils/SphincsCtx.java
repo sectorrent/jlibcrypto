@@ -1,8 +1,12 @@
-package org.sectorrent.jlibcrypto.sphincs;
+package org.sectorrent.jlibcrypto.sphincs.utils;
 
-import static org.sectorrent.jlibcrypto.sphincs.Sphincs.SPX_N;
+import org.sectorrent.jlibcrypto.hash.SHA256;
+
+import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.SPX_N;
 
 public class SphincsCtx {
+
+    public static final int SPX_SHA256_BLOCK_BYTES = 64;
 
     private byte[] pubSeed = new byte[SPX_N];
     private byte[] skSeed = new byte[SPX_N];
@@ -33,5 +37,17 @@ public class SphincsCtx {
 
     public byte[] getStateSeeded(){
         return stateSeeded;
+    }
+
+    public void seedState(){
+        byte[] block = new byte[SPX_SHA256_BLOCK_BYTES];
+
+        for(int i = 0; i < SPX_N; ++i){
+            block[i] = pubSeed[i];
+        }
+
+        SHA256 hash = new SHA256();
+        hash.update(block);
+        stateSeeded = hash.getState();
     }
 }

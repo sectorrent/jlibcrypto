@@ -1,4 +1,4 @@
-package org.sectorrent.jlibcrypto.sphincs;
+package org.sectorrent.jlibcrypto.sphincs.utils;
 
 public class LeafInfoX1 {
 
