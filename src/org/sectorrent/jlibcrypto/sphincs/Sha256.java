@@ -25,8 +25,6 @@ public class Sha256 extends BaseHash {
 
     private static final int[] w = new int[64];
 
-    private static Boolean valid;
-
     private int h0, h1, h2, h3, h4, h5, h6, h7;
 
     public Sha256(){
@@ -66,7 +64,10 @@ public class Sha256 extends BaseHash {
     }
 
     private static int parseInt(byte[] data, int offset){
-        return data[offset+3] & 0xFF | ((data[offset+2] & 0xFF) <<  8) | ((data[offset + 1] & 0xFF) <<  16) | ((data[offset+0] & 0xFF) <<  24);
+        return data[offset+3] & 0xFF |
+                ((data[offset+2] & 0xFF) << 8) |
+                ((data[offset + 1] & 0xFF) << 16) |
+                ((data[offset+0] & 0xFF) << 24);
     }
 
     private static void storeInt(byte[] data, int offset, int val){

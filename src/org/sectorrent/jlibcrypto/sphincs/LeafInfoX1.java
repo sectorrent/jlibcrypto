@@ -4,7 +4,7 @@ public class LeafInfoX1 {
 
     byte[] wotsSig;
     int wotsSigOffset=0;
-    int wotsSignLeaf; /* The index of the WOTS we're using to sign */
+    int wotsSignLeaf;
     int[] wotsSteps;
     int[] leafAddr = new int[8];
     int[] pkAddr = new int[8];

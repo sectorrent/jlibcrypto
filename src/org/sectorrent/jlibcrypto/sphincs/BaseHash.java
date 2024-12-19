@@ -66,11 +66,11 @@ public abstract class BaseHash {
     }
 
     public byte[] digest(){
-        byte[] tail = padBuffer(); // pad remaining bytes in buffer
-        update(tail, 0, tail.length); // last transform of a message
-        byte[] result = getResult(); // make a result out of context
+        byte[] tail = padBuffer();
+        update(tail, 0, tail.length);
+        byte[] result = getResult();
 
-        reset(); // reset this instance for future re-use
+        reset();
 
         return result;
     }

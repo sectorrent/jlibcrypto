@@ -388,11 +388,11 @@ public class Sphincs {
         }
 
         tree[0] = bytesToUll(buf, bufp, SPX_TREE_BYTES);
-        tree[0] &= ((1L << SPX_TREE_BITS)-1);//(~(long)0) >> (64-SPX_TREE_BITS);
+        tree[0] &= ((1L << SPX_TREE_BITS)-1);
         bufp += SPX_TREE_BYTES;
 
         leaf_idx[0] = (int) bytesToUll(buf, bufp, SPX_LEAF_BYTES);
-        leaf_idx[0] &= ((1 << SPX_LEAF_BITS)-1);//(~(int)0) >> (32-SPX_LEAF_BITS);
+        leaf_idx[0] &= ((1 << SPX_LEAF_BITS)-1);
     }
 
     public static long bytesToUll(byte[] in, int inOffset, int inlen){
@@ -868,10 +868,9 @@ public class Sphincs {
 
             }else if(SPX_N <= 256){
                 return 2;
-
-            }else{
-                throw new IllegalStateException("Did not precompute SPX_WOTS_LEN2 for n outside {2, .., 256}");
             }
+
+            throw new IllegalStateException("Did not precompute SPX_WOTS_LEN2 for n outside {2, .., 256}");
 
         }else if(SPX_WOTS_W == 16){
             if(SPX_N <= 8){
@@ -882,12 +881,11 @@ public class Sphincs {
 
             }else if(SPX_N <= 256){
                 return 4;
-
-            }else{
-                throw new IllegalStateException("Did not precompute SPX_WOTS_LEN2 for n outside {2, .., 256}");
             }
-        }else{
-            throw new IllegalStateException("Unknown SPX_WOTS_W");
+
+            throw new IllegalStateException("Did not precompute SPX_WOTS_LEN2 for n outside {2, .., 256}");
         }
+
+        throw new IllegalStateException("Unknown SPX_WOTS_W");
     }
 }
