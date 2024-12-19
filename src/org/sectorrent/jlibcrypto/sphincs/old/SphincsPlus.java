@@ -1,5 +1,7 @@
 package org.sectorrent.jlibcrypto.sphincs.old;
 
+import org.sectorrent.jlibcrypto.sphincs.utils.*;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;

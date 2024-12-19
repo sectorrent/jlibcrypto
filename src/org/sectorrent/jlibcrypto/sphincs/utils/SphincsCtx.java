@@ -1,4 +1,4 @@
-package org.sectorrent.jlibcrypto.sphincs.old;
+package org.sectorrent.jlibcrypto.sphincs.utils;
 
 import static org.sectorrent.jlibcrypto.sphincs.old.SphincsPlus.SPX_N;
 

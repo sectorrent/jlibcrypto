@@ -1,9 +1,9 @@
 package org.sectorrent.jlibcrypto.sphincs;
 
-import org.sectorrent.jlibcrypto.sphincs.old.GenLeaf;
-import org.sectorrent.jlibcrypto.sphincs.old.LeafInfoX1;
-import org.sectorrent.jlibcrypto.sphincs.old.Sha256;
-import org.sectorrent.jlibcrypto.sphincs.old.SphincsCtx;
+import org.sectorrent.jlibcrypto.sphincs.utils.GenLeaf;
+import org.sectorrent.jlibcrypto.sphincs.utils.LeafInfoX1;
+import org.sectorrent.jlibcrypto.sphincs.utils.Sha256;
+import org.sectorrent.jlibcrypto.sphincs.utils.SphincsCtx;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.*;
@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.CRYPTO_SEED_BYTES;
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.SPX_N;
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPrivateKey.SPX_SK_BYTES;
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPublicKey.SPX_PK_BYTES;
 

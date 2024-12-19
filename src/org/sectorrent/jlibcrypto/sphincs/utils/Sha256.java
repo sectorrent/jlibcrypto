@@ -1,4 +1,4 @@
-package org.sectorrent.jlibcrypto.sphincs.old;
+package org.sectorrent.jlibcrypto.sphincs.utils;
 
 public class Sha256 extends BaseHash {
 
