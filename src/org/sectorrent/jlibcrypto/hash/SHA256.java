@@ -1,6 +1,6 @@
-package org.sectorrent.jlibcrypto.sphincs.utils;
+package org.sectorrent.jlibcrypto.hash;
 
-public class Sha256 extends BaseHash {
+public class SHA256 extends BaseHash {
 
     private static final int[] k = {
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
@@ -27,11 +27,11 @@ public class Sha256 extends BaseHash {
 
     private int h0, h1, h2, h3, h4, h5, h6, h7;
 
-    public Sha256(){
+    public SHA256(){
         super("SHA-256", 32, BLOCK_SIZE);
     }
 
-    public Sha256(byte[] state, int count){
+    public SHA256(byte[] state, int count){
         super("SHA-256", 32, BLOCK_SIZE);
         this.h0 = parseInt(state, 0);
         this.h1 = parseInt(state, 4);
@@ -83,7 +83,7 @@ public class Sha256 extends BaseHash {
         }
     }
 
-    private Sha256(Sha256 md){
+    private SHA256(SHA256 md){
         this();
 
         this.h0 = md.h0;
@@ -103,7 +103,7 @@ public class Sha256 extends BaseHash {
     }
 
     public Object clone(){
-        return new Sha256(this);
+        return new SHA256(this);
     }
 
     protected void transform(byte[] in, int offset){

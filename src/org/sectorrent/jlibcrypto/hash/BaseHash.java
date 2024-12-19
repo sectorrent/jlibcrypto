@@ -1,4 +1,4 @@
-package org.sectorrent.jlibcrypto.sphincs.utils;
+package org.sectorrent.jlibcrypto.hash;
 
 public abstract class BaseHash {
 
