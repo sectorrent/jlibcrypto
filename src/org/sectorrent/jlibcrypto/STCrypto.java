@@ -13,6 +13,6 @@ public class STCrypto extends Provider {
         // Register SPHINCS+ KeyPairGenerator
         put("KeyPairGenerator.SPHINCSPLUS", "org.sectorrent.jlibcrypto.sphincs.SphincsPlusKeyPairGenerator");
 
-        //put("MessageDigest.MyHash", "");
+        put("MessageDigest.CRC32C", "org.sectorrent.jlibcrypto.hash.CRC32c");
     }
 }

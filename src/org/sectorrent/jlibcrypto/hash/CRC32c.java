@@ -1,67 +1,62 @@
 package org.sectorrent.jlibcrypto.hash;
 
+import java.security.MessageDigest;
 import java.util.zip.Checksum;
 
-public class CRC32c implements Checksum {
+public class CRC32c extends MessageDigest {
 
     private int crc;
 
     public CRC32c(){
+        super("CRC32C");
         reset();
     }
 
     @Override
-    public long getValue(){
-        long ret = crc;
-        return (~ret) & 0xffffffffL;
+    protected void engineUpdate(byte input){
+        crc = (crc >>> 8) ^ T[T8_0_START + ((crc ^ input) & 0xff)];
     }
 
     @Override
-    public void reset(){
-        crc = 0xffffffff;
-    }
-
-    @SuppressWarnings("fallthrough")
-    @Override
-    public void update(byte[] b, int off, int len){
+    protected void engineUpdate(byte[] input, int offset, int len){
         int localCrc = crc;
 
         while(len > 7){
-            final int c0 = (b[off + 0] ^ localCrc) & 0xff;
-            final int c1 = (b[off + 1] ^ (localCrc >>>= 8)) & 0xff;
-            final int c2 = (b[off + 2] ^ (localCrc >>>= 8)) & 0xff;
-            final int c3 = (b[off + 3] ^ (localCrc >>>= 8)) & 0xff;
+            final int c0 = (input[offset + 0] ^ localCrc) & 0xff;
+            final int c1 = (input[offset + 1] ^ (localCrc >>>= 8)) & 0xff;
+            final int c2 = (input[offset + 2] ^ (localCrc >>>= 8)) & 0xff;
+            final int c3 = (input[offset + 3] ^ (localCrc >>>= 8)) & 0xff;
             localCrc = (T[T8_7_START + c0] ^ T[T8_6_START + c1])
                     ^ (T[T8_5_START + c2] ^ T[T8_4_START + c3]);
 
-            final int c4 = b[off + 4] & 0xff;
-            final int c5 = b[off + 5] & 0xff;
-            final int c6 = b[off + 6] & 0xff;
-            final int c7 = b[off + 7] & 0xff;
+            final int c4 = input[offset + 4] & 0xff;
+            final int c5 = input[offset + 5] & 0xff;
+            final int c6 = input[offset + 6] & 0xff;
+            final int c7 = input[offset + 7] & 0xff;
 
             localCrc ^= (T[T8_3_START + c4] ^ T[T8_2_START + c5])
                     ^ (T[T8_1_START + c6] ^ T[T8_0_START + c7]);
 
-            off += 8;
+            offset += 8;
             len -= 8;
         }
 
         /* loop unroll - duff's device style */
         switch(len){
             case 7:
-                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ b[off++]) & 0xff)];
+                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ input[offset++]) & 0xff)];
             case 6:
-                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ b[off++]) & 0xff)];
+                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ input[offset++]) & 0xff)];
             case 5:
-                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ b[off++]) & 0xff)];
+                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ input[offset++]) & 0xff)];
             case 4:
-                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ b[off++]) & 0xff)];
+                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ input[offset++]) & 0xff)];
             case 3:
-                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ b[off++]) & 0xff)];
+                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ input[offset++]) & 0xff)];
             case 2:
-                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ b[off++]) & 0xff)];
+                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ input[offset++]) & 0xff)];
             case 1:
-                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ b[off++]) & 0xff)];
+                localCrc = (localCrc >>> 8) ^ T[T8_0_START + ((localCrc ^ input[offset++]) & 0xff)];
             default:
                 /* nothing */
         }
@@ -71,8 +66,24 @@ public class CRC32c implements Checksum {
     }
 
     @Override
-    public void update(int b){
-        crc = (crc >>> 8) ^ T[T8_0_START + ((crc ^ b) & 0xff)];
+    protected byte[] engineDigest(){
+        long ret = (~crc) & 0xffffffffL;
+
+        return new byte[]{
+                (byte) (ret >> 56),
+                (byte) (ret >> 48),
+                (byte) (ret >> 40),
+                (byte) (ret >> 32),
+                (byte) (ret >> 24),
+                (byte) (ret >> 16),
+                (byte) (ret >> 8),
+                (byte) (ret)
+        };
+    }
+
+    @Override
+    protected void engineReset(){
+        crc = 0xffffffff;
     }
 
     private static final int T8_0_START = 0 * 256;

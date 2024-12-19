@@ -1,10 +1,7 @@
 package org.sectorrent.jlibcrypto;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.Security;
-import java.security.Signature;
+import java.security.*;
 import java.util.Arrays;
 
 public class Main {
