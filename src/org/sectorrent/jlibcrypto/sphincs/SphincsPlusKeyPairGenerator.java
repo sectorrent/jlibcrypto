@@ -116,6 +116,8 @@ public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
         byte[] publicKey = new byte[SPX_PK_BYTES];
         byte[] privateKey = new byte[SPX_SK_BYTES];
 
+        //SUDO RANDOM THE SEED BY THE RANDOM GENERATED ON INIT...
+
         SphincsCtx ctx = new SphincsCtx();
         System.arraycopy(hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a7"), 0, privateKey, 0, CRYPTO_SEED_BYTES);
         System.arraycopy(privateKey, 2*SPX_N, publicKey, 0, SPX_N);
@@ -125,17 +127,6 @@ public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
         seedState(ctx);
         merkleGenRoot(privateKey, 3*SPX_N, ctx);
         System.arraycopy(privateKey, 3*SPX_N, publicKey, SPX_N, SPX_N);
-
-
-        /*
-        // Generate SPHINCS+ key pair
-        byte[] privateKeyBytes = new byte[64]; // Adjust size based on SPHINCS+ parameters
-        byte[] publicKeyBytes = new byte[32]; // Adjust size based on SPHINCS+ parameters
-
-        // Populate keys with random data (replace with actual SPHINCS+ generation)
-        random.nextBytes(privateKeyBytes);
-        random.nextBytes(publicKeyBytes);
-        */
 
         return new KeyPair(new SphincsPlusPublicKey(publicKey), new SphincsPlusPrivateKey(privateKey));
     }
