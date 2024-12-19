@@ -14,5 +14,6 @@ public class STCrypto extends Provider {
         put("KeyPairGenerator.SPHINCSPLUS", "org.sectorrent.jlibcrypto.sphincs.SphincsPlusKeyPairGenerator");
 
         put("MessageDigest.CRC32C", "org.sectorrent.jlibcrypto.hash.CRC32c");
+        put("MessageDigest.SHA256", "org.sectorrent.jlibcrypto.hash.SHA256x");
     }
 }

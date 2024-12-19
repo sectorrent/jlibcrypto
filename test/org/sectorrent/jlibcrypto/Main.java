@@ -17,8 +17,9 @@ public class Main {
             digest.update("asdasd".getBytes());
             System.out.println(Base64.getEncoder().encodeToString(digest.digest()));
 
-            SHA256x sha256x = new SHA256x();
-            System.out.println(Base64.getEncoder().encodeToString(sha256x.digest("asdasd".getBytes())));
+            digest = MessageDigest.getInstance("SHA256");
+            digest.update("asdasd".getBytes());
+            System.out.println(Base64.getEncoder().encodeToString(digest.digest()));
 
 
             // Generate a key pair

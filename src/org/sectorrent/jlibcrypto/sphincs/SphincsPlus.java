@@ -148,8 +148,8 @@ public class SphincsPlus {
         return sig;
     }
 
-    public void update(byte[] b){
-        update(b, 0, b.length);
+    public void update(byte b){
+        update(new byte[]{ b }, 0, 1);
     }
 
     public void update(byte[] b, int off, int len){

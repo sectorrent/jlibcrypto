@@ -29,7 +29,7 @@ public class SphincsPlusSignature extends SignatureSpi {
 
     @Override
     protected void engineUpdate(byte b)throws SignatureException {
-        sphincs.update(new byte[]{ b });
+        sphincs.update(b);
     }
 
     @Override
