@@ -49,8 +49,6 @@ public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
     public static final int SPX_FORS_PK_BYTES = SPX_N;
 
     public static final int SPX_BYTES = (SPX_N+SPX_FORS_BYTES+SPX_D*SPX_WOTS_BYTES+SPX_FULL_HEIGHT*SPX_N);
-    public static final int SPX_PK_BYTES = (2*SPX_N);
-    public static final int SPX_SK_BYTES = (2*SPX_N+SPX_PK_BYTES);
 
     public static final int SPX_OFFSET_LAYER = 0;   /* The byte used to specify the Merkle tree layer */
     public static final int SPX_OFFSET_TREE = 1;   /* The start of the 8 byte field used to specify the tree */
@@ -277,6 +275,20 @@ public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
         return true;
     }
 
+    public static void wotsChecksum(int[] csumBaseW, int offset){
+        int[] msgBaseW = csumBaseW;
+        int csum = 0;
+        byte[] csumBytes = new byte[(SPX_WOTS_LEN2*SPX_WOTS_LOGW+7)/8];
+
+        for(int i = 0; i < SPX_WOTS_LEN1; i++){
+            csum += SPX_WOTS_W-1-msgBaseW[i];
+        }
+
+        csum = csum << ((8-((SPX_WOTS_LEN2*SPX_WOTS_LOGW)%8))%8);
+        ullToBytes(csumBytes, csum);
+        baseW(csumBaseW, offset, SPX_WOTS_LEN2, csumBytes, 0);
+    }
+
     public static void setKeyPairAddr(int[] addr, int keypair){
         if(SPX_FULL_HEIGHT/SPX_D > 8){
             setByte(addr, SPX_OFFSET_KP_ADDR2, (byte) (keypair >> 8));
@@ -323,20 +335,6 @@ public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
             output[outputOffset+out] = (total >> bits) & (SPX_WOTS_W-1);
             out++;
         }
-    }
-
-    public static void wotsChecksum(int[] csumBaseW, int offset){
-        int[] msgBaseW = csumBaseW;
-        int csum = 0;
-        byte[] csumBytes = new byte[(SPX_WOTS_LEN2*SPX_WOTS_LOGW+7)/8];
-
-        for(int i = 0; i < SPX_WOTS_LEN1; i++){
-            csum += SPX_WOTS_W-1-msgBaseW[i];
-        }
-
-        csum = csum << ((8-((SPX_WOTS_LEN2*SPX_WOTS_LOGW)%8))%8);
-        ullToBytes(csumBytes, csum);
-        baseW(csumBaseW, offset, SPX_WOTS_LEN2, csumBytes, 0);
     }
 
     public static void ullToBytes(byte[] out, int in){

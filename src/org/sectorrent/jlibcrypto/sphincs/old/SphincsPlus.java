@@ -136,6 +136,7 @@ public class SphincsPlus {
         return sig;
     }
 
+    //verify
     public static byte[] cryptoSignOpen(byte[] sig, byte[] pk){
         SphincsCtx ctx = new SphincsCtx();
         byte[] pubRoot = Arrays.copyOfRange(pk, SPX_N, pk.length);
