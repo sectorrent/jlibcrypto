@@ -63,16 +63,6 @@ public class Sphincs {
     public static final int SPX_SHAX_BLOCK_BYTES = SPX_SHA256_BLOCK_BYTES;
     public static final int SPX_SHAX_OUTPUT_BYTES = SPX_SHA256_OUTPUT_BYTES;
 
-    static {
-        if(SPX_TREE_HEIGHT*SPX_D != SPX_FULL_HEIGHT){
-            throw new IllegalStateException("SPX_D should always divide SPX_FULL_HEIGHT");
-        }
-
-        if(SPX_SHA256_OUTPUT_BYTES < SPX_N){
-            throw new IllegalStateException("Linking against SHA-256 with N larger than 32 bytes is not supported");
-        }
-    }
-
     public static final int SPX_SHA256_ADDR_BYTES = 22;
 
     public static final int SPX_ADDR_TYPE_WOTS = 0;
@@ -82,6 +72,16 @@ public class Sphincs {
     public static final int SPX_ADDR_TYPE_FORSPK = 4;
     public static final int SPX_ADDR_TYPE_WOTSPRF = 5;
     public static final int SPX_ADDR_TYPE_FORSPRF = 6;
+
+    static {
+        if(SPX_TREE_HEIGHT*SPX_D != SPX_FULL_HEIGHT){
+            throw new IllegalStateException("SPX_D should always divide SPX_FULL_HEIGHT");
+        }
+
+        if(SPX_SHA256_OUTPUT_BYTES < SPX_N){
+            throw new IllegalStateException("Linking against SHA-256 with N larger than 32 bytes is not supported");
+        }
+    }
 
     public static byte[] cryptoSign(byte[] m, byte[] sk){
         byte[] sig = new byte[SPX_BYTES+m.length];
@@ -97,8 +97,8 @@ public class Sphincs {
         int[] wotsAddr = new int[8];
         int[] treeAddr = new int[8];
 
-        ctx.pubSeed = Arrays.copyOfRange(sk, 2*SPX_N, 2*SPX_N+SPX_N);
-        ctx.skSeed = Arrays.copyOfRange(sk, 0, SPX_N);
+        ctx.setPubSeed(Arrays.copyOfRange(sk, 2*SPX_N, 2*SPX_N+SPX_N));
+        ctx.setSkSeed(Arrays.copyOfRange(sk, 0, SPX_N));
 
         seedState(ctx);
 
@@ -154,7 +154,7 @@ public class Sphincs {
             throw new IllegalStateException("Signature too short!");
         }
 
-        System.arraycopy(pk, 0, ctx.pubSeed, 0, SPX_N);
+        System.arraycopy(pk, 0, ctx.getPubSeed(), 0, SPX_N);
 
         seedState(ctx);
 
@@ -333,7 +333,7 @@ public class Sphincs {
         System.arraycopy(buf, 0, R, 0, SPX_N);
     }
 
-    public static void hashMessage(byte[] digest, long[] tree, int[] leaf_idx, byte[] R, byte[] pk, byte[] m){
+    public static void hashMessage(byte[] digest, long[] tree, int[] leafIdx, byte[] R, byte[] pk, byte[] m){
         int SPX_TREE_BITS = (SPX_TREE_HEIGHT*(SPX_D-1)); // 3*21 = 63
         int SPX_TREE_BYTES = ((SPX_TREE_BITS+7)/8); // 8
         int SPX_LEAF_BITS = SPX_TREE_HEIGHT; // 3
@@ -391,8 +391,8 @@ public class Sphincs {
         tree[0] &= ((1L << SPX_TREE_BITS)-1);
         bufp += SPX_TREE_BYTES;
 
-        leaf_idx[0] = (int) bytesToUll(buf, bufp, SPX_LEAF_BYTES);
-        leaf_idx[0] &= ((1 << SPX_LEAF_BITS)-1);
+        leafIdx[0] = (int) bytesToUll(buf, bufp, SPX_LEAF_BYTES);
+        leafIdx[0] &= ((1 << SPX_LEAF_BITS)-1);
     }
 
     public static long bytesToUll(byte[] in, int inOffset, int inlen){
@@ -409,7 +409,7 @@ public class Sphincs {
         byte[] roots = new byte[SPX_FORS_TREES*SPX_N];
         int[] forsTreeAddr = new int[8];
         ForsGenLeafInfo forsInfo = new ForsGenLeafInfo();
-        int[] forsLeafAddr = forsInfo.leafAddrX;
+        int[] forsLeafAddr = forsInfo.getLeafAddrX();
         int[] forsPkAddr = new int[8];
         int idxOffset;
 
@@ -441,8 +441,7 @@ public class Sphincs {
     }
 
     private static void forsGenLeafx1(byte[] leaf, int leafOffset, SphincsCtx ctx, int addrIdx, ForsGenLeafInfo info){
-        ForsGenLeafInfo fors_info = info;
-        int[] forsLeafAddr = fors_info.leafAddrX;
+        int[] forsLeafAddr = info.getLeafAddrX();
 
         setTreeIndex(forsLeafAddr, addrIdx);
         setByte(forsLeafAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSPRF);
@@ -469,8 +468,8 @@ public class Sphincs {
         SphincsCtx ctx = new SphincsCtx();
         System.arraycopy(seed, 0, sk, 0, CRYPTO_SEED_BYTES);
         System.arraycopy(sk, 2*SPX_N, pk, 0, SPX_N);
-        ctx.pubSeed = Arrays.copyOfRange(pk, 0, SPX_N);
-        ctx.skSeed = Arrays.copyOfRange(sk, 0, SPX_N);
+        ctx.setPubSeed(Arrays.copyOfRange(pk, 0, SPX_N));
+        ctx.setSkSeed(Arrays.copyOfRange(sk, 0, SPX_N));
 
         seedState(ctx);
         merkleGenRoot(sk, 3*SPX_N, ctx);
@@ -479,14 +478,15 @@ public class Sphincs {
 
     public static void seedState(SphincsCtx ctx){
         byte[] block = new byte[SPX_SHA256_BLOCK_BYTES];
+        byte[] pubSeed = ctx.getPubSeed();
 
         for(int i = 0; i < SPX_N; ++i){
-            block[i] = ctx.pubSeed[i];
+            block[i] = pubSeed[i];
         }
 
         Sha256 hash = new Sha256();
         hash.update(block);
-        ctx.stateSeeded = hash.getState();
+        ctx.setStateSeeded(hash.getState());
     }
 
     public static void merkleGenRoot(byte[] root, int rootOffset, SphincsCtx ctx){
@@ -512,17 +512,17 @@ public class Sphincs {
     public static void merkleSign(byte[] sig, int sigOffset, byte[] root, int rootOffset, SphincsCtx ctx, int[] wotsAddr, int[] treeAddr, int idxLeaf){
         LeafInfoX1 info = new LeafInfoX1();
         int[] steps = new int[SPX_WOTS_LEN];
-        info.wotsSig = sig;
-        info.wotsSigOffset = sigOffset;
+        info.setWotsSig(sig);
+        info.setWotsSigOffset(sigOffset);
         chainLengths(steps, root, rootOffset);
-        info.wotsSteps = steps;
+        info.setWotsSteps(steps);
 
         setByte(treeAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_HASHTREE);
-        setByte(info.pkAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTSPK);
-        copySubtreeAddr(info.leafAddr, wotsAddr);
-        copySubtreeAddr(info.pkAddr, wotsAddr);
+        setByte(info.getPkAddr(), SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTSPK);
+        copySubtreeAddr(info.getLeafAddr(), wotsAddr);
+        copySubtreeAddr(info.getPkAddr(), wotsAddr);
 
-        info.wotsSignLeaf = idxLeaf;
+        info.setWotsSignLeaf(idxLeaf);
 
         treehashx1(root, rootOffset, sig, sigOffset+SPX_WOTS_BYTES, ctx, idxLeaf, 0, SPX_TREE_HEIGHT, (a, b, c, d) -> wotsGenLeafx1(a, b, c, d, info), treeAddr);
     }
@@ -555,15 +555,15 @@ public class Sphincs {
     public static void wotsChecksum(int[] csumBaseW, int offset){
         int[] msgBaseW = csumBaseW;
         int csum = 0;
-        byte[] csum_bytes = new byte[(SPX_WOTS_LEN2*SPX_WOTS_LOGW+7)/8];
+        byte[] csumBytes = new byte[(SPX_WOTS_LEN2*SPX_WOTS_LOGW+7)/8];
 
         for(int i = 0; i < SPX_WOTS_LEN1; i++){
             csum += SPX_WOTS_W-1-msgBaseW[i];
         }
 
         csum = csum << ((8-((SPX_WOTS_LEN2*SPX_WOTS_LOGW)%8))%8);
-        ullToBytes(csum_bytes, csum);
-        baseW(csumBaseW, offset, SPX_WOTS_LEN2, csum_bytes, 0);
+        ullToBytes(csumBytes, csum);
+        baseW(csumBaseW, offset, SPX_WOTS_LEN2, csumBytes, 0);
     }
 
     public static void ullToBytes(byte[] out, int in){
@@ -580,21 +580,21 @@ public class Sphincs {
 
     public static void wotsGenLeafx1(byte[] dest, int destOffset, SphincsCtx ctx, int leafIdx, LeafInfoX1 vInfo){
         LeafInfoX1 info = vInfo;
-        int[] leaf_addr = info.leafAddr;
+        int[] leafAddr = info.getLeafAddr();
 
-        int[] pk_addr = info.pkAddr;
-        byte[] pk_buffer = new byte[SPX_WOTS_BYTES];
-        int wots_k_mask;
+        int[] pkAddr = info.getPkAddr();
+        byte[] pkBuffer = new byte[SPX_WOTS_BYTES];
+        int wotsKMask;
 
-        if(leafIdx == info.wotsSignLeaf){
-            wots_k_mask = 0;
+        if(leafIdx == info.getWotsSignLeaf()){
+            wotsKMask = 0;
 
         }else{
-            wots_k_mask = ~0;
+            wotsKMask = ~0;
         }
 
-        setKeyPairAddr(leaf_addr, leafIdx);
-        setKeyPairAddr(pk_addr, leafIdx);
+        setKeyPairAddr(leafAddr, leafIdx);
+        setKeyPairAddr(pkAddr, leafIdx);
 
         List<ForkJoinTask<Boolean>> thashes = new ArrayList<>();
 
@@ -610,13 +610,13 @@ public class Sphincs {
 
         for(int j = 0; j < splits.size()-1; j++){
             int jCopy = j;
-            int[] addrs = Arrays.copyOfRange(leaf_addr, 0, leaf_addr.length);
+            int[] addrs = Arrays.copyOfRange(leafAddr, 0, leafAddr.length);
 
             if(j == splits.size()-2){
-                wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pk_buffer, splits.get(jCopy)*SPX_N, wots_k_mask, addrs, info, ctx);
+                wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pkBuffer, splits.get(jCopy)*SPX_N, wotsKMask, addrs, info, ctx);
 
             }else{
-                ForkJoinTask<Boolean> task = ForkJoinPool.commonPool().submit(() -> wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pk_buffer, splits.get(jCopy)*SPX_N, wots_k_mask, addrs, info, ctx));
+                ForkJoinTask<Boolean> task = ForkJoinPool.commonPool().submit(() -> wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pkBuffer, splits.get(jCopy)*SPX_N, wotsKMask, addrs, info, ctx));
                 thashes.add(task);
             }
         }
@@ -625,12 +625,14 @@ public class Sphincs {
             hash.join();
         }
 
-        thash(dest, destOffset, pk_buffer, 0, SPX_WOTS_LEN, ctx, pk_addr);
+        thash(dest, destOffset, pkBuffer, 0, SPX_WOTS_LEN, ctx, pkAddr);
     }
 
     private static boolean wotsLoops(int start, int end, byte[] buffer, int bufferOffset, int wotsKMask, int[] leafAddr, LeafInfoX1 info, SphincsCtx ctx){
+        int[] wotsSteps = info.getWotsSteps();
+
         for(int i = start; i < end; i++, bufferOffset += SPX_N){
-            int wotsK = info.wotsSteps[i] | wotsKMask;
+            int wotsK = wotsSteps[i] | wotsKMask;
 
             setByte(leafAddr, SPX_OFFSET_CHAIN_ADDR, (byte) i);
             setByte(leafAddr, SPX_OFFSET_HASH_ADDR, (byte) 0);
@@ -647,9 +649,9 @@ public class Sphincs {
     }
 
     private static boolean wotsComponent(byte[] buffer, int off, int[] addrs, int i, int wotsK, LeafInfoX1 info, SphincsCtx ctx){
-        for(int k=0;; k++){
+        for(int k = 0;; k++){
             if(k == wotsK){
-                System.arraycopy(buffer, off, info.wotsSig, info.wotsSigOffset+i*SPX_N, SPX_N);
+                System.arraycopy(buffer, off, info.getWotsSig(), info.getWotsSigOffset()+i*SPX_N, SPX_N);
             }
 
             if(k == SPX_WOTS_W-1){
@@ -663,15 +665,15 @@ public class Sphincs {
     }
 
     public static void prfAddr(byte[] out, int outOffset, SphincsCtx ctx, int[] addr){
-        byte[] sha2_state = new byte[40];
+        byte[] sha2State = new byte[40];
         byte[] buf = new byte[SPX_SHA256_ADDR_BYTES+SPX_N];
 
-        System.arraycopy(ctx.stateSeeded, 0, sha2_state, 0, 40);
+        System.arraycopy(ctx.getStateSeeded(), 0, sha2State, 0, 40);
 
         System.arraycopy(intsToBytes(addr, SPX_SHA256_ADDR_BYTES), 0, buf, 0, SPX_SHA256_ADDR_BYTES);
-        System.arraycopy(ctx.skSeed, 0, buf, SPX_SHA256_ADDR_BYTES, SPX_N);
+        System.arraycopy(ctx.getSkSeed(), 0, buf, SPX_SHA256_ADDR_BYTES, SPX_N);
 
-        Sha256 res = new Sha256(sha2_state, 64);
+        Sha256 res = new Sha256(sha2State, 64);
         res.update(buf);
         byte[] state = res.digest();
 
@@ -734,32 +736,32 @@ public class Sphincs {
     public static void treehashx1(byte[] root, int rootOffset, byte[] authPath, int auth_pathOffset, SphincsCtx ctx, int leafIdx, int idxOffset, int treeHeight, GenLeaf genLeaf, int[] treeAddr){
         byte[] stack = new byte[treeHeight*SPX_N];
 
-        int max_idx = (1 << treeHeight)-1;
+        int maxIdx = (1 << treeHeight)-1;
         for(int idx = 0;; idx++){
             byte[] current = new byte[2*SPX_N];
             genLeaf.apply(current, SPX_N, ctx, idx+idxOffset);
 
-            int internal_idx_offset = idxOffset;
-            int internal_idx = idx;
-            int internal_leaf = leafIdx;
+            int internalIdxOffset = idxOffset;
+            int internalIdx = idx;
+            int internalLeaf = leafIdx;
             int h;
-            for(h = 0;; h++, internal_idx >>= 1, internal_leaf >>= 1){
+            for(h = 0;; h++, internalIdx >>= 1, internalLeaf >>= 1){
                 if(h == treeHeight){
                     System.arraycopy(current, SPX_N, root, rootOffset, SPX_N);
                     return;
                 }
 
-                if((internal_idx ^ internal_leaf) == 0x01){
+                if((internalIdx ^ internalLeaf) == 0x01){
                     System.arraycopy(current, SPX_N, authPath, auth_pathOffset+h*SPX_N, SPX_N);
                 }
 
-                if((internal_idx & 1) == 0 && idx < max_idx){
+                if((internalIdx & 1) == 0 && idx < maxIdx){
                     break;
                 }
 
-                internal_idx_offset >>= 1;
+                internalIdxOffset >>= 1;
                 setTreeHeight(treeAddr, h+1);
-                setTreeIndex(treeAddr, internal_idx/2+internal_idx_offset );
+                setTreeIndex(treeAddr, internalIdx/2+internalIdxOffset);
 
                 System.arraycopy(stack, h*SPX_N, current, 0, SPX_N);
                 thash(current, 1*SPX_N, current, 0, 2, ctx, treeAddr);
@@ -774,11 +776,11 @@ public class Sphincs {
         byte[] bitmask = new byte[inblocks*SPX_N];
         byte[] sha2_state = new byte[40];
 
-        System.arraycopy(ctx.pubSeed, 0, buf, 0, SPX_N);
+        System.arraycopy(ctx.getPubSeed(), 0, buf, 0, SPX_N);
         System.arraycopy(intsToBytes(addr, SPX_SHA256_ADDR_BYTES), 0, buf, SPX_N, SPX_SHA256_ADDR_BYTES);
         mgf1_256(bitmask, 0, inblocks*SPX_N, buf, SPX_N+SPX_SHA256_ADDR_BYTES);
 
-        System.arraycopy(ctx.stateSeeded, 0, sha2_state, 0, 40);
+        System.arraycopy(ctx.getStateSeeded(), 0, sha2_state, 0, 40);
 
         for(int i = 0; i < inblocks*SPX_N; i++){
             buf[SPX_N+SPX_SHA256_ADDR_BYTES+i] = (byte)(in[inOffset+i] ^ bitmask[i]);
@@ -793,6 +795,7 @@ public class Sphincs {
     private static byte[] intsToBytes(int[] in, int bytes){
         int intCount = (bytes+3)/4;
         byte[] res = new byte[bytes+4];
+
         for(int i = 0; i < intCount; i++){
             res[i*4] = (byte)in[i];
             res[i*4+1] = (byte)(in[i] >> 8);
