@@ -1,86 +1,12 @@
 package org.sectorrent.jlibcrypto.hash;
 
 import java.security.MessageDigest;
-import java.util.Arrays;
 
 public class SHA256x extends MessageDigest {
 
-    private byte[] message;
+    private static final int BLOCK_SIZE = 64;
 
-    public SHA256x(){
-        super("SHA256");
-    }
-
-    @Override
-    protected void engineUpdate(byte input){
-        engineUpdate(new byte[]{ input }, 0, 1);
-    }
-
-    @Override
-    protected void engineUpdate(byte[] input, int offset, int len){
-        if(offset > len){
-            throw new IllegalArgumentException("Offset is greater than length");
-        }
-
-        if(message == null){
-            message = new byte[len-offset];
-            System.arraycopy(input, offset, message, 0, message.length);
-            return;
-        }
-
-        byte[] m = new byte[message.length+len-offset];
-        System.arraycopy(message, 0, m, 0, m.length);
-        System.arraycopy(input, offset, m, message.length, len-offset);
-        message = m;
-    }
-
-    @Override
-    protected byte[] engineDigest(){
-        byte[] padded = padMessage(message);
-
-        int[] hs = Arrays.copyOf(HS, 8);
-
-        for(int i = 0; i < padded.length/64; ++i){
-            int[] registers = Arrays.copyOf(hs, 8);
-            System.arraycopy(padded, 64*i, block, 0, 64);
-
-            setupWords();
-
-            for(int j = 0; j < 64; ++j){
-                iterate(registers, words, j);
-            }
-
-            for(int j = 0; j < 8; ++j){
-                hs[j] += registers[j];
-            }
-        }
-
-        byte[] hash = new byte[32];
-
-        for(int i = 0; i < 8; i++){
-            System.arraycopy(intToBytes(hs[i]), 0, hash, 4 * i, 4);
-        }
-
-        return hash;
-    }
-
-    @Override
-    protected void engineReset(){
-        message = null;
-    }
-
-    private static final int[] HS = {
-            0x6a09e667,
-            0xbb67ae85,
-            0x3c6ef372,
-            0xa54ff53a,
-            0x510e527f,
-            0x9b05688c,
-            0x1f83d9ab,
-            0x5be0cd19
-    };
-
-    private static final int[] KS = {
+    private static final int[] k = {
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
             0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
             0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -99,89 +25,240 @@ public class SHA256x extends MessageDigest {
             0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     };
 
-    private final byte[] block = new byte[64];
+    private static final int[] w = new int[64];
 
-    private final int[] words = new int[64];
+    private int[] h = {
+            0x6a09e667,
+            0xbb67ae85,
+            0x3c6ef372,
+            0xa54ff53a,
+            0x510e527f,
+            0x9b05688c,
+            0x1f83d9ab,
+            0x5be0cd19
+    };
 
-    private void setupWords(){
-        for(int j = 0; j < 16; j++){
-            words[j] = 0;
-            for(int m = 0; m < 4; m++){
-                words[j] |= ((block[j*4+m] & 0x000000FF) << (24-m*8));
+    private byte[] buffer = new byte[BLOCK_SIZE];
+    private int initialCount, count;
+
+    public SHA256x(){
+        super("SHA256");
+    }
+
+    public SHA256x(byte[] state, int count){
+        super("SHA-256");
+        this.h[0] = parseInt(state, 0);
+        this.h[1] = parseInt(state, 4);
+        this.h[2] = parseInt(state, 8);
+        this.h[3] = parseInt(state, 12);
+        this.h[4] = parseInt(state, 16);
+        this.h[5] = parseInt(state, 20);
+        this.h[6] = parseInt(state, 24);
+        this.h[7] = parseInt(state, 28);
+        this.initialCount = count;
+        this.count = count;
+    }
+
+    @Override
+    protected void engineUpdate(byte input){
+        int i = (int) (count%BLOCK_SIZE);
+        count++;
+        buffer[i] = input;
+
+        if(i == (BLOCK_SIZE-1)){
+            transform(buffer, 0);
+        }
+    }
+
+    @Override
+    protected void engineUpdate(byte[] input, int offset, int len){
+        int n = (int) (count%BLOCK_SIZE);
+        count += len;
+        int partLen = BLOCK_SIZE-n;
+        int i = 0;
+
+        if(len >= partLen){
+            System.arraycopy(input, offset, buffer, n, partLen);
+            transform(buffer, 0);
+            for(i = partLen; i+BLOCK_SIZE-1 < len; i += BLOCK_SIZE){
+                transform(input, offset+i);
             }
+
+            n = 0;
         }
 
-        for(int j = 16; j < 64; ++j){
-            int s0 = Integer.rotateRight(words[j-15], 7) ^
-                    Integer.rotateRight(words[j-15], 18) ^
-                    (words[j-15] >>> 3);
-
-            int s1 = Integer.rotateRight(words[j-2], 17) ^
-                    Integer.rotateRight(words[j-2], 19) ^
-                    (words[j-2] >>> 10);
-
-            words[j] = words[j-16]+s0+words[j-7] + s1;
+        if(i < len){
+            System.arraycopy(input, offset+i, buffer, n, len-i);
         }
     }
 
-    private static void iterate(int[] registers, int[] words, int j){
-        int S0 = Integer.rotateRight(registers[0], 2) ^
-                Integer.rotateRight(registers[0], 13) ^
-                Integer.rotateRight(registers[0], 22);
-
-        int maj = (registers[0] & registers[1]) ^ (registers[0] & registers[2]) ^ (registers[1] & registers[2]);
-
-        int temp2 = S0 + maj;
-
-        int S1 = Integer.rotateRight(registers[4], 6) ^
-                Integer.rotateRight(registers[4], 11) ^
-                Integer.rotateRight(registers[4], 25);
-
-        int ch = (registers[4] & registers[5]) ^ (~registers[4] & registers[6]);
-
-        int temp1 = registers[7] + S1 + ch + KS[j] + words[j];
-
-        registers[7] = registers[6];
-        registers[6] = registers[5];
-        registers[5] = registers[4];
-        registers[4] = registers[3]+temp1;
-        registers[3] = registers[2];
-        registers[2] = registers[1];
-        registers[1] = registers[0];
-        registers[0] = temp1+temp2;
+    @Override
+    protected byte[] engineDigest(){
+        byte[] tail = padBuffer();
+        engineUpdate(tail, 0, tail.length);
+        return getResult();
     }
 
-    private byte[] padMessage(byte[] data){
-        int length = data.length;
-        int tail = length%64;
-        int padding;
-
-        if((64-tail >= 9)){
-            padding = 64-tail;
-        }else{
-            padding = 128-tail;
-        }
-
-        byte[] pad = new byte[padding];
-        pad[0] = (byte) 0x80;
-        long bits = length*8;
-
-        for(int i = 0; i < 8; i++){
-            pad[pad.length-1-i] = (byte) ((bits >>> (8*i)) & 0xFF);
-        }
-
-        byte[] output = new byte[length + padding];
-        System.arraycopy(data, 0, output, 0, length);
-        System.arraycopy(pad, 0, output, length, pad.length);
-
-        return output;
+    @Override
+    protected void engineReset(){
+        buffer = new byte[BLOCK_SIZE];
+        h = new int[]{
+                0x6a09e667,
+                0xbb67ae85,
+                0x3c6ef372,
+                0xa54ff53a,
+                0x510e527f,
+                0x9b05688c,
+                0x1f83d9ab,
+                0x5be0cd19
+        };
+        count = initialCount;
     }
 
-    public byte[] intToBytes(int i){
-        byte[] b = new byte[4];
-        for(int c = 0; c < 4; c++){
-            b[c] = (byte) ((i >>> (56-8*c)) & 0xff);
+    private void completeBlock(){
+        byte[] tail = padBuffer();
+        update(tail, 0, tail.length);
+    }
+
+    public byte[] getState(){
+        byte[] res = new byte[40];
+        storeInt(res, 0, h[0]);
+        storeInt(res, 4, h[1]);
+        storeInt(res, 8, h[2]);
+        storeInt(res, 12, h[3]);
+        storeInt(res, 16, h[4]);
+        storeInt(res, 20, h[5]);
+        storeInt(res, 24, h[6]);
+        storeInt(res, 28, h[7]);
+        storeBigendianLong(res, 32, count);
+
+        return res;
+    }
+
+    private int parseInt(byte[] data, int offset){
+        return data[offset+3] & 0xFF |
+                ((data[offset+2] & 0xFF) << 8) |
+                ((data[offset + 1] & 0xFF) << 16) |
+                ((data[offset+0] & 0xFF) << 24);
+    }
+
+    private void storeInt(byte[] data, int offset, int val){
+        data[offset+0] = (byte)(val >> 24);
+        data[offset+1] = (byte)(val >> 16);
+        data[offset+2] = (byte)(val >> 8);
+        data[offset+3] = (byte) val;
+    }
+
+    private static void storeBigendianLong(byte[] data, int offset, long val){
+        for(int i=0; i < 8; i++){
+            data[offset + i] = (byte) (val >> (56 - i*8));
         }
-        return b;
+    }
+
+    public static final int[] G(int hh0, int hh1, int hh2, int hh3, int hh4, int hh5, int hh6, int hh7, byte[] in, int offset){
+        return sha(hh0, hh1, hh2, hh3, hh4, hh5, hh6, hh7, in, offset);
+    }
+
+    private void transform(byte[] in, int offset){
+        int[] result = sha(h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], in, offset);
+        h[0] = result[0];
+        h[1] = result[1];
+        h[2] = result[2];
+        h[3] = result[3];
+        h[4] = result[4];
+        h[5] = result[5];
+        h[6] = result[6];
+        h[7] = result[7];
+    }
+
+    private byte[] padBuffer(){
+        int n = (int)(count % BLOCK_SIZE);
+        int padding = (n < 56) ? (56-n) : (120 - n);
+        byte[] result = new byte[padding+8];
+
+        result[0] = (byte) 0x80;
+
+        long bits = count << 3;
+        result[padding++] = (byte)(bits >>> 56);
+        result[padding++] = (byte)(bits >>> 48);
+        result[padding++] = (byte)(bits >>> 40);
+        result[padding++] = (byte)(bits >>> 32);
+        result[padding++] = (byte)(bits >>> 24);
+        result[padding++] = (byte)(bits >>> 16);
+        result[padding++] = (byte)(bits >>> 8);
+        result[padding] = (byte) bits;
+        return result;
+    }
+
+    private byte[] getResult(){
+        return new byte[]{
+                (byte)(h[0] >>> 24), (byte)(h[0] >>> 16), (byte)(h[0] >>> 8), (byte) h[0],
+                (byte)(h[1] >>> 24), (byte)(h[1] >>> 16), (byte)(h[1] >>> 8), (byte) h[1],
+                (byte)(h[2] >>> 24), (byte)(h[2] >>> 16), (byte)(h[2] >>> 8), (byte) h[2],
+                (byte)(h[3] >>> 24), (byte)(h[3] >>> 16), (byte)(h[3] >>> 8), (byte) h[3],
+                (byte)(h[4] >>> 24), (byte)(h[4] >>> 16), (byte)(h[4] >>> 8), (byte) h[4],
+                (byte)(h[5] >>> 24), (byte)(h[5] >>> 16), (byte)(h[5] >>> 8), (byte) h[5],
+                (byte)(h[6] >>> 24), (byte)(h[6] >>> 16), (byte)(h[6] >>> 8), (byte) h[6],
+                (byte)(h[7] >>> 24), (byte)(h[7] >>> 16), (byte)(h[7] >>> 8), (byte) h[7]
+        };
+    }
+
+    private static synchronized int[] sha(int hh0, int hh1, int hh2, int hh3, int hh4, int hh5, int hh6, int hh7, byte[] in, int offset){
+        int A = hh0;
+        int B = hh1;
+        int C = hh2;
+        int D = hh3;
+        int E = hh4;
+        int F = hh5;
+        int G = hh6;
+        int H = hh7;
+        int r, T, T2;
+
+        for(r = 0; r < 16; r++){
+            w[r] = (in[offset++]         << 24
+                    | (in[offset++] & 0xFF) << 16
+                    | (in[offset++] & 0xFF) << 8
+                    | (in[offset++] & 0xFF));
+        }
+
+        for(r = 16; r < 64; r++){
+            T =  w[r -  2];
+            T2 = w[r - 15];
+            w[r] = ((((T >>> 17) | (T << 15)) ^ ((T >>> 19) | (T << 13)) ^ (T >>> 10))
+                    + w[r - 7]
+                    + (((T2 >>> 7) | (T2 << 25))
+                    ^ ((T2 >>> 18) | (T2 << 14))
+                    ^ (T2 >>> 3)) + w[r - 16]);
+        }
+
+        for (r = 0; r < 64; r++){
+            T = (H
+                    + (((E >>> 6) | (E << 26))
+                    ^ ((E >>> 11) | (E << 21))
+                    ^ ((E >>> 25) | (E << 7)))
+                    + ((E & F) ^ (~E & G)) + k[r] + w[r]);
+            T2 = ((((A >>> 2) | (A << 30))
+                    ^ ((A >>> 13) | (A << 19))
+                    ^ ((A >>> 22) | (A << 10))) + ((A & B) ^ (A & C) ^ (B & C)));
+            H = G;
+            G = F;
+            F = E;
+            E = D + T;
+            D = C;
+            C = B;
+            B = A;
+            A = T + T2;
+        }
+
+        return new int[]{
+                hh0 + A,
+                hh1 + B,
+                hh2 + C,
+                hh3 + D,
+                hh4 + E,
+                hh5 + F,
+                hh6 + G,
+                hh7 + H
+        };
     }
 }

@@ -1,6 +1,6 @@
 package org.sectorrent.jlibcrypto.sphincs;
 
-import org.sectorrent.jlibcrypto.hash.SHA256;
+import org.sectorrent.jlibcrypto.hash.SHA256x;
 import org.sectorrent.jlibcrypto.sphincs.utils.*;
 
 import java.security.KeyPair;
@@ -250,7 +250,6 @@ public class SphincsPlus {
         return new KeyPair(new SphincsPlusPublicKey(publicKey), new SphincsPlusPrivateKey(privateKey));
     }
 
-
     private static void merkleGenRoot(byte[] root, int rootOffset, SphincsCtx ctx){
         byte[] authPath = new byte[SPX_TREE_HEIGHT*SPX_N+SPX_WOTS_BYTES];
         int[] topTreeAddr = new int[8];
@@ -276,7 +275,7 @@ public class SphincsPlus {
             buf[SPX_N+j] = (byte)0x36;
         }
 
-        MessageDigest hash = newSha256();
+        MessageDigest hash = getInstance();
         hash.update(buf, 0, 64);
 
         System.arraycopy(optrand, 0, buf, 0, SPX_N);
@@ -630,7 +629,7 @@ public class SphincsPlus {
         System.arraycopy(intsToBytes(addr, SPX_SHA256_ADDR_BYTES), 0, buf, 0, SPX_SHA256_ADDR_BYTES);
         System.arraycopy(ctx.getSkSeed(), 0, buf, SPX_SHA256_ADDR_BYTES, SPX_N);
 
-        SHA256 res = new SHA256(sha2State, 64);
+        SHA256x res = new SHA256x(sha2State, 64);
         res.update(buf);
         byte[] state = res.digest();
 
@@ -690,7 +689,7 @@ public class SphincsPlus {
             buf[SPX_N+SPX_SHA256_ADDR_BYTES+i] = (byte)(in[inOffset+i] ^ bitmask[i]);
         }
 
-        SHA256 res = new SHA256(sha2State, 64);
+        SHA256x res = new SHA256x(sha2State, 64);
         res.update(buf, SPX_N, SPX_SHA256_ADDR_BYTES+inblocks*SPX_N);
         byte[] digest = res.digest();
         System.arraycopy(digest, 0, out, outOffset, SPX_N);
@@ -880,15 +879,6 @@ public class SphincsPlus {
         md.update(in);
         byte[] res = md.digest();
         System.arraycopy(res, 0, out, outIndex, res.length);
-    }
-
-    public static MessageDigest newSha256(){
-        try{
-            return MessageDigest.getInstance("SHA-256");
-
-        }catch(NoSuchAlgorithmException e){
-            throw new RuntimeException(e);
-        }
     }
 
     public static final int len(){
