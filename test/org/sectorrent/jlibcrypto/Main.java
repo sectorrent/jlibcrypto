@@ -1,13 +1,18 @@
 package org.sectorrent.jlibcrypto;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Security;
+import java.security.Signature;
 import java.util.Arrays;
 
-import static org.sectorrent.jlibcrypto.sphincs.Sphincs.*;
+import static org.sectorrent.jlibcrypto.sphincs.old.SphincsPlus.*;
 
 public class Main {
 
     public static void main(String[] args){
+        /*
         byte[] pk = new byte[SPX_PK_BYTES];
         byte[] sk = new byte[SPX_SK_BYTES];
         byte[] seed = hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a7");
@@ -22,6 +27,34 @@ public class Main {
 
         byte[] opened = cryptoSignOpen(signed, pk);
         System.out.println(Arrays.equals(opened, m));
+        */
+
+
+        // Add the SPHINCS+ provider
+        Security.addProvider(new STCrypto());
+
+        try {
+            // Generate a key pair
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("SPHINCSPLUS");
+            keyGen.initialize(256); // Security level
+            KeyPair keyPair = keyGen.generateKeyPair();
+
+            // Sign data
+            Signature signature = Signature.getInstance("SPHINCSPLUS");
+            signature.initSign(keyPair.getPrivate());
+            signature.update("Hello, SPHINCS+".getBytes());
+            byte[] sigBytes = signature.sign();
+
+            // Verify signature
+            signature.initVerify(keyPair.getPublic());
+            signature.update("Hello, SPHINCS+".getBytes());
+            boolean verified = signature.verify(sigBytes);
+
+            System.out.println("Signature verified: " + verified);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static byte[] hexToBytes(String hexString){

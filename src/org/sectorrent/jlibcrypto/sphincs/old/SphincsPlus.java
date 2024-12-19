@@ -1,4 +1,4 @@
-package org.sectorrent.jlibcrypto.sphincs;
+package org.sectorrent.jlibcrypto.sphincs.old;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
-public class Sphincs {
+public class SphincsPlus {
 
     public static final int SPX_N = 16; // Hash output length in bytes
 
@@ -83,6 +83,7 @@ public class Sphincs {
         }
     }
 
+    //SIGN THE MESSAGE
     public static byte[] cryptoSign(byte[] m, byte[] sk){
         byte[] sig = new byte[SPX_BYTES+m.length];
         SphincsCtx ctx = new SphincsCtx();

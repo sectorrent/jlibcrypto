@@ -1,6 +1,6 @@
-package org.sectorrent.jlibcrypto.sphincs;
+package org.sectorrent.jlibcrypto.sphincs.old;
 
-import static org.sectorrent.jlibcrypto.sphincs.Sphincs.SPX_N;
+import static org.sectorrent.jlibcrypto.sphincs.old.SphincsPlus.SPX_N;
 
 public class SphincsCtx {
 

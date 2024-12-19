@@ -1,4 +1,4 @@
-package org.sectorrent.jlibcrypto.sphincs;
+package org.sectorrent.jlibcrypto.sphincs.old;
 
 public class ForsGenLeafInfo {
 
