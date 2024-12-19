@@ -1,6 +1,6 @@
 package org.sectorrent.jlibcrypto.sphincs.utils;
 
-import org.sectorrent.jlibcrypto.hash.SHA256x;
+import org.sectorrent.jlibcrypto.hash.SHA256;
 
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.SPX_N;
 
@@ -46,7 +46,7 @@ public class SphincsCtx {
             block[i] = pubSeed[i];
         }
 
-        SHA256x hash = new SHA256x();
+        SHA256 hash = new SHA256();
         hash.update(block);
         stateSeeded = hash.getState();
     }

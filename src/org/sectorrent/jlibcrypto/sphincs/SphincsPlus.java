@@ -1,6 +1,6 @@
 package org.sectorrent.jlibcrypto.sphincs;
 
-import org.sectorrent.jlibcrypto.hash.SHA256x;
+import org.sectorrent.jlibcrypto.hash.SHA256;
 import org.sectorrent.jlibcrypto.sphincs.utils.*;
 
 import java.security.KeyPair;
@@ -77,6 +77,8 @@ public class SphincsPlus {
     public static final int SPX_ADDR_TYPE_FORSPK = 4;
     public static final int SPX_ADDR_TYPE_WOTSPRF = 5;
     public static final int SPX_ADDR_TYPE_FORSPRF = 6;
+
+    private static final ThreadLocal<MessageDigest> sha2 = ThreadLocal.withInitial(() -> getInstance());
 
     static {
         if(SPX_TREE_HEIGHT*SPX_D != SPX_FULL_HEIGHT){
@@ -302,7 +304,11 @@ public class SphincsPlus {
             buf[SPX_N+j] = 0x5c;
         }
 
-        sha256(buf, 0, buf, 0, SPX_SHAX_BLOCK_BYTES+SPX_SHAX_OUTPUT_BYTES);
+        MessageDigest md = sha2.get();
+        md.update(Arrays.copyOfRange(buf, 0, SPX_SHAX_BLOCK_BYTES+SPX_SHAX_OUTPUT_BYTES));
+        byte[] res = md.digest();
+        System.arraycopy(res, 0, buf, 0, res.length);
+
         System.arraycopy(buf, 0, R, 0, SPX_N);
     }
 
@@ -330,7 +336,11 @@ public class SphincsPlus {
 
         if(SPX_N+SPX_PK_BYTES+m.length < SPX_INBLOCKS*SPX_SHAX_BLOCK_BYTES){
             System.arraycopy(m, 0, inbuf, SPX_N+SPX_PK_BYTES, m.length);
-            sha256(seed, 2*SPX_N, inbuf, 0, SPX_N+SPX_PK_BYTES+m.length);
+
+            MessageDigest md = sha2.get();
+            md.update(Arrays.copyOfRange(inbuf, 0, SPX_N+SPX_PK_BYTES+m.length));
+            byte[] res = md.digest();
+            System.arraycopy(res, 0, seed, 2*SPX_N, res.length);
 
         }else{
             int initialCopySize = SPX_INBLOCKS*SPX_SHAX_BLOCK_BYTES-SPX_N-SPX_PK_BYTES;
@@ -598,13 +608,23 @@ public class SphincsPlus {
 
         for(i = 0; (i+1)*SPX_SHA256_OUTPUT_BYTES <= outlen; i++){
             u32ToBytes(inbuf, inlen, i);
-            sha256(out, outIndex, inbuf);
+
+            MessageDigest md = sha2.get();
+            md.update(inbuf);
+            byte[] res = md.digest();
+            System.arraycopy(res, 0, out, outIndex, res.length);
+
             outIndex += SPX_SHA256_OUTPUT_BYTES;
         }
 
         if(outlen > i*SPX_SHA256_OUTPUT_BYTES){
             u32ToBytes(inbuf, inlen, i);
-            sha256(outbuf, 0, inbuf);
+
+            MessageDigest md = sha2.get();
+            md.update(inbuf);
+            byte[] res = md.digest();
+            System.arraycopy(res, 0, outbuf, 0, res.length);
+
             System.arraycopy(outbuf, 0, out, outIndex, outlen-i*SPX_SHA256_OUTPUT_BYTES);
         }
     }
@@ -629,7 +649,7 @@ public class SphincsPlus {
         System.arraycopy(intsToBytes(addr, SPX_SHA256_ADDR_BYTES), 0, buf, 0, SPX_SHA256_ADDR_BYTES);
         System.arraycopy(ctx.getSkSeed(), 0, buf, SPX_SHA256_ADDR_BYTES, SPX_N);
 
-        SHA256x res = new SHA256x(sha2State, 64);
+        SHA256 res = new SHA256(sha2State, 64);
         res.update(buf);
         byte[] state = res.digest();
 
@@ -689,7 +709,7 @@ public class SphincsPlus {
             buf[SPX_N+SPX_SHA256_ADDR_BYTES+i] = (byte)(in[inOffset+i] ^ bitmask[i]);
         }
 
-        SHA256x res = new SHA256x(sha2State, 64);
+        SHA256 res = new SHA256(sha2State, 64);
         res.update(buf, SPX_N, SPX_SHA256_ADDR_BYTES+inblocks*SPX_N);
         byte[] digest = res.digest();
         System.arraycopy(digest, 0, out, outOffset, SPX_N);
@@ -859,8 +879,6 @@ public class SphincsPlus {
         }
     }
 
-    private static final ThreadLocal<MessageDigest> sha2 = ThreadLocal.withInitial(() -> getInstance());
-
     private static MessageDigest getInstance(){
         try{
             return MessageDigest.getInstance("SHA-256");
@@ -868,17 +886,6 @@ public class SphincsPlus {
         }catch(NoSuchAlgorithmException e){
             throw new RuntimeException(e);
         }
-    }
-
-    public static void sha256(byte[] out, int outIndex, byte[] in, int inStart, int inSize){
-        sha256(out, outIndex, Arrays.copyOfRange(in, inStart, inStart+inSize));
-    }
-
-    public static void sha256(byte[] out, int outIndex, byte[] in){
-        MessageDigest md = sha2.get();
-        md.update(in);
-        byte[] res = md.digest();
-        System.arraycopy(res, 0, out, outIndex, res.length);
     }
 
     public static final int len(){

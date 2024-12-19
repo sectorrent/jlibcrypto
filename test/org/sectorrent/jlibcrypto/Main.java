@@ -1,7 +1,5 @@
 package org.sectorrent.jlibcrypto;
 
-import org.sectorrent.jlibcrypto.hash.SHA256x;
-
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.*;
 import java.util.Arrays;
@@ -13,15 +11,6 @@ public class Main {
         Security.addProvider(new STCrypto());
 
         try{
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update("asdasd".getBytes());
-            System.out.println(Base64.getEncoder().encodeToString(digest.digest()));
-
-            digest = MessageDigest.getInstance("SHA256");
-            digest.update("asdasd".getBytes());
-            System.out.println(Base64.getEncoder().encodeToString(digest.digest()));
-
-
             // Generate a key pair
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("SPHINCSPLUS");
             keyGen.initialize(256);

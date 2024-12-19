@@ -2,7 +2,7 @@ package org.sectorrent.jlibcrypto.hash;
 
 import java.security.MessageDigest;
 
-public class SHA256x extends MessageDigest {
+public class SHA256 extends MessageDigest {
 
     private static final int BLOCK_SIZE = 64;
 
@@ -39,13 +39,13 @@ public class SHA256x extends MessageDigest {
     };
 
     private byte[] buffer = new byte[BLOCK_SIZE];
-    private int initialCount, count;
+    private int initialCount = 0, count = 0;
 
-    public SHA256x(){
-        super("SHA256");
+    public SHA256(){
+        super("SHA-256");
     }
 
-    public SHA256x(byte[] state, int count){
+    public SHA256(byte[] state, int count){
         super("SHA-256");
         this.h[0] = parseInt(state, 0);
         this.h[1] = parseInt(state, 4);
@@ -96,7 +96,10 @@ public class SHA256x extends MessageDigest {
     protected byte[] engineDigest(){
         byte[] tail = padBuffer();
         engineUpdate(tail, 0, tail.length);
-        return getResult();
+        byte[] result = getResult();
+        engineReset();
+
+        return result;
     }
 
     @Override
