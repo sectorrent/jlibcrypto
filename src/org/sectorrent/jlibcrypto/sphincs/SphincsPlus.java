@@ -92,39 +92,17 @@ public class SphincsPlus {
 
 
     private byte[] key;
-    private byte[] update;
-
+    private byte[] message;
 
     public SphincsPlus(byte[] key){
         this.key = key;
     }
 
     public byte[] sign(){
-        return cryptoSign(update, key);
-    }
-
-    public void update(byte[] b){
-        update(b, 0, b.length);
-    }
-
-    public void update(byte[] b, int off, int len){
-        update = b; //TEMPORARY
-    }
-
-    public boolean verify(byte[] sigBytes){
-        byte[] opened = cryptoSignOpen(sigBytes, key);
-        return Arrays.equals(opened, update);
-    }
-
-
-
-
-
-    public static byte[] cryptoSign(byte[] m, byte[] sk){
-        byte[] sig = new byte[SPX_BYTES+m.length];
+        byte[] sig = new byte[SPX_BYTES+message.length];
         SphincsCtx ctx = new SphincsCtx();
-        byte[] skPrf = Arrays.copyOfRange(sk, SPX_N,  sk.length);;
-        byte[] pk = Arrays.copyOfRange(sk, 2*SPX_N, sk.length);
+        byte[] skPrf = Arrays.copyOfRange(key, SPX_N,  key.length);;
+        byte[] pk = Arrays.copyOfRange(key, 2*SPX_N, key.length);
 
         byte[] optrand = new byte[SPX_N];
         byte[] mhash = new byte[SPX_FORS_MSG_BYTES];
@@ -134,17 +112,17 @@ public class SphincsPlus {
         int[] wotsAddr = new int[8];
         int[] treeAddr = new int[8];
 
-        ctx.setPubSeed(Arrays.copyOfRange(sk, 2*SPX_N, 2*SPX_N+SPX_N));
-        ctx.setSkSeed(Arrays.copyOfRange(sk, 0, SPX_N));
+        ctx.setPubSeed(Arrays.copyOfRange(key, 2*SPX_N, 2*SPX_N+SPX_N));
+        ctx.setSkSeed(Arrays.copyOfRange(key, 0, SPX_N));
 
         seedState(ctx);
 
         setByte(wotsAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTS);
         setByte(treeAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_HASHTREE);
 
-        genMessageRandom(sig, skPrf, optrand, m);
+        genMessageRandom(sig, skPrf, optrand, message);
 
-        hashMessage(mhash, tree, idxLeaf, sig, pk, m);
+        hashMessage(mhash, tree, idxLeaf, sig, pk, message);
         int sigOffset = SPX_N;
 
         setTreeAddr(wotsAddr, tree[0]);
@@ -168,13 +146,35 @@ public class SphincsPlus {
             tree[0] = tree[0] >> SPX_TREE_HEIGHT;
         }
 
-        System.arraycopy(m, 0, sig, SPX_BYTES, m.length);
+        System.arraycopy(message, 0, sig, SPX_BYTES, message.length);
+
         return sig;
     }
 
-    public static byte[] cryptoSignOpen(byte[] sig, byte[] pk){
+    public void update(byte[] b){
+        update(b, 0, b.length);
+    }
+
+    public void update(byte[] b, int off, int len){
+        if(off > len){
+            throw new IllegalArgumentException("Offset is greater than length");
+        }
+
+        if(message == null){
+            message = new byte[len-off];
+            System.arraycopy(b, off, message, 0, message.length);
+            return;
+        }
+
+        byte[] m = new byte[message.length+len-off];
+        System.arraycopy(message, 0, m, 0, m.length);
+        System.arraycopy(b, off, m, message.length, len-off);
+        message = m;
+    }
+
+    public boolean verify(byte[] sig){
         SphincsCtx ctx = new SphincsCtx();
-        byte[] pubRoot = Arrays.copyOfRange(pk, SPX_N, pk.length);
+        byte[] pubRoot = Arrays.copyOfRange(key, SPX_N, key.length);
         byte[] mhash = new byte[SPX_FORS_MSG_BYTES];
         byte[] wotsPk = new byte[SPX_WOTS_BYTES];
         byte[] root = new byte[SPX_N];
@@ -191,7 +191,7 @@ public class SphincsPlus {
             throw new IllegalStateException("Signature too short!");
         }
 
-        System.arraycopy(pk, 0, ctx.getPubSeed(), 0, SPX_N);
+        System.arraycopy(key, 0, ctx.getPubSeed(), 0, SPX_N);
 
         seedState(ctx);
 
@@ -199,7 +199,7 @@ public class SphincsPlus {
         setByte(treeAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_HASHTREE);
         setByte(wotsPkAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTSPK);
 
-        hashMessage(mhash, tree, idxLeaf, sig, pk, m);
+        hashMessage(mhash, tree, idxLeaf, sig, key, m);
         sigOffset += SPX_N;
 
         setTreeAddr(wotsAddr, tree[0]);
@@ -233,10 +233,11 @@ public class SphincsPlus {
             throw new IllegalStateException("Invalid signature!");
         }
 
-        return Arrays.copyOfRange(sig, SPX_BYTES, sig.length);
+        return Arrays.equals(Arrays.copyOfRange(sig, SPX_BYTES, sig.length), message);
     }
 
-    public static void genMessageRandom(byte[] R, byte[] sk_prf, byte[] optrand, byte[] m){
+
+    private void genMessageRandom(byte[] R, byte[] skPrf, byte[] optrand, byte[] m){
         byte[] buf = new byte[SPX_SHAX_BLOCK_BYTES+SPX_SHAX_OUTPUT_BYTES];
 
         if(SPX_N > SPX_SHAX_BLOCK_BYTES){
@@ -244,7 +245,7 @@ public class SphincsPlus {
         }
 
         for(int i = 0; i < SPX_N; i++){
-            buf[i] = (byte) (0x36 ^ sk_prf[i]);
+            buf[i] = (byte) (0x36 ^ skPrf[i]);
         }
         for(int j = 0; j < SPX_SHAX_BLOCK_BYTES-SPX_N; j++){
             buf[SPX_N+j] = (byte)0x36;
@@ -270,7 +271,7 @@ public class SphincsPlus {
         }
 
         for(int i = 0; i < SPX_N; i++){
-            buf[i] = (byte) (0x5c ^ sk_prf[i]);
+            buf[i] = (byte) (0x5c ^ skPrf[i]);
         }
 
         for(int j=0; j < SPX_SHAX_BLOCK_BYTES-SPX_N; j++){
