@@ -18,12 +18,14 @@ public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
 
     @Override
     public KeyPair generateKeyPair(){
-        return null;
+        KyberPKI kyberPKI = generateKeys();
+        return new KeyPair(kyberPKI.getPublicKey(), kyberPKI.getPrivateKey());
     }
 
-    private KyberPKI generateKeys512(SecureRandom rand){
+    private KyberPKI generateKeys(){
         int paramsK = 2;
-        KyberPKI kyberPKI = new KyberPKI();
+        return null;
+        //KyberPKI kyberPKI = new KyberPKI();
         //try{
         /*
             KyberPackedPKI indcpaPKI = Indcpa.generateKyberKeys(paramsK);
@@ -43,13 +45,12 @@ public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
             System.arraycopy(pkh, 0, privateKeyFixedLength, offsetEnd, pkh.length);
             offsetEnd += pkh.length;
             System.arraycopy(rnd, 0, privateKeyFixedLength, offsetEnd, rnd.length);
-            kyberPKI.setPublicKey(new KyberPublicKey(packedPublicKey, null, null));
-            kyberPKI.setPrivateKey(new KyberPrivateKey(privateKeyFixedLength, null, null));
+
+            return new KyberPKI(new KyberPublicKey(packedPublicKey, null, null), new KyberPrivateKey(privateKeyFixedLength, null, null));
             /*
         }catch(Exception ex){
             System.out.println("generateKeys512 Exception! [" + ex.getMessage() + "]");
             ex.printStackTrace();
         }*/
-        return kyberPKI;
     }
 }

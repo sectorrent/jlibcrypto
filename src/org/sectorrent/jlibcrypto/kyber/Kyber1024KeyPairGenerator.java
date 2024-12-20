@@ -12,7 +12,7 @@ public class Kyber1024KeyPairGenerator extends KeyPairGeneratorSpi {
 
     @Override
     public void initialize(int keysize, SecureRandom random){
-        if(keysize != 768){
+        if(keysize != 1024){
             throw new InvalidParameterException("Kyber key size must be 1024.");
         }
 

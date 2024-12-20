@@ -10,7 +10,7 @@ public class SphincsPlusSignature extends SignatureSpi {
     @Override
     protected void engineInitVerify(PublicKey publicKey)throws InvalidKeyException {
         if(!(publicKey instanceof SphincsPlusPublicKey)){
-            throw new InvalidKeyException("Invalid public key for SPHINCS+");
+            throw new InvalidKeyException("Invalid public key for SphincsPlus");
         }
 
         sphincs = new SphincsPlus(((SphincsPlusPublicKey) publicKey).getPublicKeyBytes());
@@ -20,7 +20,7 @@ public class SphincsPlusSignature extends SignatureSpi {
     @Override
     protected void engineInitSign(PrivateKey privateKey)throws InvalidKeyException {
         if(!(privateKey instanceof SphincsPlusPrivateKey)){
-            throw new InvalidKeyException("Invalid private key for SPHINCS+");
+            throw new InvalidKeyException("Invalid private key for SphincsPlus");
         }
 
         sphincs = new SphincsPlus(((SphincsPlusPrivateKey) privateKey).getPrivateKeyBytes());
@@ -57,11 +57,11 @@ public class SphincsPlusSignature extends SignatureSpi {
 
     @Override
     protected void engineSetParameter(String param, Object value)throws InvalidParameterException {
-        throw new UnsupportedOperationException("SPHINCS+ does not support parameters");
+        throw new UnsupportedOperationException("SphincsPlus does not support parameters");
     }
 
     @Override
     protected Object engineGetParameter(String param)throws InvalidParameterException {
-        throw new UnsupportedOperationException("SPHINCS+ does not support parameters");
+        throw new UnsupportedOperationException("SphincsPlus does not support parameters");
     }
 }

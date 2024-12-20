@@ -16,7 +16,7 @@ public class SphincsPlusPrivateKey implements PrivateKey {
 
     @Override
     public String getAlgorithm(){
-        return "SPHINCSPLUS";
+        return "SphincsPlus";
     }
 
     @Override

@@ -16,7 +16,7 @@ public class SphincsPlusPublicKey implements PublicKey {
 
     @Override
     public String getAlgorithm(){
-        return "SPHINCSPLUS";
+        return "SphincsPlus";
     }
 
     @Override
