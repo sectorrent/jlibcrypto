@@ -1,14 +1,9 @@
 package org.sectorrent.jlibcrypto.sphincs;
 
-import org.sectorrent.jlibcrypto.sphincs.utils.SphincsCtx;
-
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.*;
-import java.util.Arrays;
 
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.*;
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPrivateKey.SPX_SK_BYTES;
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPublicKey.SPX_PK_BYTES;
 
 public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
 
@@ -27,8 +22,8 @@ public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
 
     @Override
     public KeyPair generateKeyPair(){
-        //return generateKeys(random.generateSeed(keySize));
-        return generateKeys(hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a7"));
+        return generateKeys(random.generateSeed(keySize));
+        //return generateKeys(hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a7"));
     }
 
     //TEMPORARY
