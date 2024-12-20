@@ -156,17 +156,6 @@ public class SphincsPlus {
         return Arrays.equals(Arrays.copyOfRange(sig, SPX_BYTES, sig.length), message);
     }
 
-    protected static void merkleGenRoot(byte[] root, int rootOffset, SphincsCtx ctx){
-        byte[] authPath = new byte[SPX_TREE_HEIGHT*SPX_N+SPX_WOTS_BYTES];
-        int[] topTreeAddr = new int[8];
-        int[] wotsAddr = new int[8];
-
-        AddressUtils.setLayerAddress(topTreeAddr, SPX_D-1);
-        AddressUtils.setLayerAddress(wotsAddr, SPX_D-1);
-
-        merkleSign(authPath, 0, root, rootOffset, ctx, wotsAddr, topTreeAddr, ~0);
-    }
-
     private void genMessageRandom(byte[] R, byte[] skPrf, byte[] optrand, byte[] m){
         byte[] buf = new byte[SPX_SHAX_BLOCK_BYTES+SPX_SHAX_OUTPUT_BYTES];
 
@@ -409,6 +398,17 @@ public class SphincsPlus {
         TreeHash.setTreeHeight(addr, treeHeight);
         TreeHash.setTreeIndex(addr, leafIdx+idxOffset);
         TreeHash.treeHash(root, rootOffset, buffer, 0, 2, ctx, addr);
+    }
+
+    protected static void merkleGenRoot(byte[] root, int rootOffset, SphincsCtx ctx){
+        byte[] authPath = new byte[SPX_TREE_HEIGHT*SPX_N+SPX_WOTS_BYTES];
+        int[] topTreeAddr = new int[8];
+        int[] wotsAddr = new int[8];
+
+        AddressUtils.setLayerAddress(topTreeAddr, SPX_D-1);
+        AddressUtils.setLayerAddress(wotsAddr, SPX_D-1);
+
+        merkleSign(authPath, 0, root, rootOffset, ctx, wotsAddr, topTreeAddr, ~0);
     }
 
     private static void merkleSign(byte[] sig, int sigOffset, byte[] root, int rootOffset, SphincsCtx ctx, int[] wotsAddr, int[] treeAddr, int idxLeaf){

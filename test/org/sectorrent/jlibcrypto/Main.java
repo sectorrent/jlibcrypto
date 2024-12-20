@@ -1,8 +1,11 @@
 package org.sectorrent.jlibcrypto;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import org.sectorrent.jlibcrypto.hash.SHAKE128;
+
 import java.security.*;
 import java.util.Arrays;
+
+import static org.sectorrent.jlibcrypto.hash.SHAKE128.shake128;
 
 public class Main {
 
@@ -10,6 +13,30 @@ public class Main {
         Security.addProvider(new STProvider());
 
         try{
+
+            // Input data (hexadecimal -> bytes)
+            String inputHex = "000102030405060708090A0B0C0D0E0F";
+            byte[] input = hexToBytes(inputHex);
+
+            // Expected output for SHAKE128 (256 bits / 32 bytes)
+            String expectedHex = "5881092DD818BF4E96DC4EF8D5D5209C7283F230FDD5CA8D838B859D29E6D52B";
+            byte[] expectedOutput = hexToBytes(expectedHex);
+
+            // Compute SHAKE128 output using your implementation
+            byte[] output = SHAKE128.shake128(input, 32);
+
+            // Verify the result
+            if (Arrays.equals(output, expectedOutput)) {
+                System.out.println("SHAKE128 implementation is correct!");
+            } else {
+                System.out.println("Mismatch in SHAKE128 implementation!");
+                System.out.println("Expected: " + bytesToHex(expectedOutput));
+                System.out.println("Got:      " + bytesToHex(output));
+            }
+
+
+
+            /*
             // Generate a key pair
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("SphincsPlus");
             keyGen.initialize(256);
@@ -34,14 +61,33 @@ public class Main {
             signature.update(message);
 
             System.out.println("SIGNATURE VERIFIED: "+signature.verify(signed));
+            */
 
         }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    public static byte[] hexToBytes(String hexString){
-        HexBinaryAdapter adapter = new HexBinaryAdapter();
-        return adapter.unmarshal(hexString);
+    // Helper function to convert bytes to a hex string
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xFF & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+    public static byte[] hexToBytes(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 }
