@@ -2,11 +2,8 @@ package org.sectorrent.jlibcrypto.sphincs;
 
 import java.security.PublicKey;
 
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.SPX_N;
-
 public class SphincsPlusPublicKey implements PublicKey {
 
-    public static final int SPX_PK_BYTES = (2*SPX_N);
     private final byte[] publicKey;
 
     public SphincsPlusPublicKey(byte[] publicKey){

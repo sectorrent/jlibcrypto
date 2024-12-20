@@ -2,11 +2,9 @@ package org.sectorrent.jlibcrypto.sphincs.utils;
 
 import org.sectorrent.jlibcrypto.hash.SHA256;
 
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.SPX_N;
+import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusParams.*;
 
 public class SphincsCtx {
-
-    public static final int SPX_SHA256_BLOCK_BYTES = 64;
 
     private byte[] pubSeed = new byte[SPX_N];
     private byte[] skSeed = new byte[SPX_N];

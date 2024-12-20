@@ -7,8 +7,7 @@ import java.security.*;
 import java.util.Arrays;
 
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlus.*;
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPrivateKey.SPX_SK_BYTES;
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPublicKey.SPX_PK_BYTES;
+import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusParams.*;
 
 public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
 
