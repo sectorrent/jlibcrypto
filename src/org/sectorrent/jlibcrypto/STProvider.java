@@ -2,10 +2,10 @@ package org.sectorrent.jlibcrypto;
 
 import java.security.Provider;
 
-public class STCrypto extends Provider {
+public class STProvider extends Provider {
 
-    public STCrypto(){
-        super("STCrypto", 1.0, "Quantum Proof Cryptographic Provider");
+    public STProvider(){
+        super("STProvider", 1.0, "SecTorrent Quantum Proof Cryptographic Provider");
 
         put("Signature.SPHINCSPLUS", "org.sectorrent.jlibcrypto.sphincs.SphincsPlusSignature");
         put("KeyPairGenerator.SPHINCSPLUS", "org.sectorrent.jlibcrypto.sphincs.SphincsPlusKeyPairGenerator");
