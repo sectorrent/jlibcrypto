@@ -22,8 +22,8 @@ public class SphincsPlusKeyPairGenerator extends KeyPairGeneratorSpi {
 
     @Override
     public KeyPair generateKeyPair(){
-        return generateKeys(random.generateSeed(keySize));
-        //return generateKeys(hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a7"));
+        //return generateKeys(random.generateSeed(keySize));
+        return generateKeys(hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a7"));
     }
 
     //TEMPORARY
