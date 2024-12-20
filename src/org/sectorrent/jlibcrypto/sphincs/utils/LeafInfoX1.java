@@ -44,19 +44,19 @@ public class LeafInfoX1 {
         return wotsSteps;
     }
 
-    public void setLeafAddr(int[] leafAddr){
+    public void setLeafAddress(int[] leafAddr){
         this.leafAddr = leafAddr;
     }
 
-    public int[] getLeafAddr(){
+    public int[] getLeafAddress(){
         return leafAddr;
     }
 
-    public void setPkAddr(int[] pkAddr){
+    public void setPkAddress(int[] pkAddr){
         this.pkAddr = pkAddr;
     }
 
-    public int[] getPkAddr(){
+    public int[] getPkAddress(){
         return pkAddr;
     }
 }

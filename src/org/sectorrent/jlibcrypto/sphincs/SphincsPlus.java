@@ -52,18 +52,18 @@ public class SphincsPlus {
         hashMessage(mhash, tree, idxLeaf, sig, pk, message);
         int sigOffset = SPX_N;
 
-        setTreeAddr(wotsAddr, tree[0]);
-        setKeyPairAddr(wotsAddr, idxLeaf[0]);
+        setTreeAddress(wotsAddr, tree[0]);
+        setKeyPairAddress(wotsAddr, idxLeaf[0]);
 
         forsSign(sig, sigOffset, root, mhash, ctx, wotsAddr);
         sigOffset += SPX_FORS_BYTES;
 
         for(int i = 0; i < SPX_D; i++){
-            setLayerAddr(treeAddr, i);
-            setTreeAddr(treeAddr, tree[0]);
+            setLayerAddress(treeAddr, i);
+            setTreeAddress(treeAddr, tree[0]);
 
-            copySubtreeAddr(wotsAddr, treeAddr);
-            setKeyPairAddr(wotsAddr, idxLeaf[0]);
+            copySubtreeAddress(wotsAddr, treeAddr);
+            setKeyPairAddress(wotsAddr, idxLeaf[0]);
 
             merkleSign(sig, sigOffset, root, 0, ctx, wotsAddr, treeAddr, idxLeaf[0]);
 
@@ -129,20 +129,20 @@ public class SphincsPlus {
         hashMessage(mhash, tree, idxLeaf, sig, key, m);
         sigOffset += SPX_N;
 
-        setTreeAddr(wotsAddr, tree[0]);
-        setKeyPairAddr(wotsAddr, idxLeaf[0]);
+        setTreeAddress(wotsAddr, tree[0]);
+        setKeyPairAddress(wotsAddr, idxLeaf[0]);
 
         forsPkFromSig(root, sig, sigOffset, mhash, ctx, wotsAddr);
         sigOffset += SPX_FORS_BYTES;
 
         for(int i = 0; i < SPX_D; i++){
-            setLayerAddr(treeAddr, i);
-            setTreeAddr(treeAddr, tree[0]);
+            setLayerAddress(treeAddr, i);
+            setTreeAddress(treeAddr, tree[0]);
 
-            copySubtreeAddr(wotsAddr, treeAddr);
-            setKeyPairAddr(wotsAddr, idxLeaf[0]);
+            copySubtreeAddress(wotsAddr, treeAddr);
+            setKeyPairAddress(wotsAddr, idxLeaf[0]);
 
-            copyKeypairAddr(wotsPkAddr, wotsAddr);
+            copyKeypairAddress(wotsPkAddr, wotsAddr);
 
             wotsPkFromSig(wotsPk, sig, sigOffset, root, ctx, wotsAddr);
             sigOffset += SPX_WOTS_BYTES;
@@ -168,8 +168,8 @@ public class SphincsPlus {
         int[] topTreeAddr = new int[8];
         int[] wotsAddr = new int[8];
 
-        setLayerAddr(topTreeAddr, SPX_D-1);
-        setLayerAddr(wotsAddr, SPX_D-1);
+        setLayerAddress(topTreeAddr, SPX_D-1);
+        setLayerAddress(wotsAddr, SPX_D-1);
 
         merkleSign(authPath, 0, root, rootOffset, ctx, wotsAddr, topTreeAddr, ~0);
     }
@@ -289,7 +289,7 @@ public class SphincsPlus {
         leafIdx[0] &= ((1 << SPX_LEAF_BITS)-1);
     }
 
-    private void setTreeAddr(int[] addr, long tree){
+    private void setTreeAddress(int[] addr, long tree){
         if((SPX_TREE_HEIGHT*(SPX_D-1)) > 64){
             throw new IllegalStateException("Subtree addressing is currently limited to at most 2^64 trees");
         }
@@ -304,14 +304,14 @@ public class SphincsPlus {
         byte[] roots = new byte[SPX_FORS_TREES*SPX_N];
         int[] forsTreeAddr = new int[8];
         ForsGenLeafInfo forsInfo = new ForsGenLeafInfo();
-        int[] forsLeafAddr = forsInfo.getLeafAddrX();
+        int[] forsLeafAddr = forsInfo.getLeafAddressX();
         int[] forsPkAddr = new int[8];
         int idxOffset;
 
-        copyKeypairAddr(forsTreeAddr, forsAddr);
-        copyKeypairAddr(forsLeafAddr, forsAddr);
+        copyKeypairAddress(forsTreeAddr, forsAddr);
+        copyKeypairAddress(forsLeafAddr, forsAddr);
+        copyKeypairAddress(forsPkAddr, forsAddr);
 
-        copyKeypairAddr(forsPkAddr, forsAddr);
         setByte(forsPkAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSPK);
 
         messageToIndices(indices, m);
@@ -323,7 +323,7 @@ public class SphincsPlus {
             setTreeIndex(forsTreeAddr, indices[i]+idxOffset);
             setByte(forsTreeAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSPRF);
 
-            prfAddr(sig, sigOffset, ctx, forsTreeAddr);
+            prfAddress(sig, sigOffset, ctx, forsTreeAddr);
             setByte(forsTreeAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSTREE);
             sigOffset += SPX_N;
 
@@ -344,7 +344,7 @@ public class SphincsPlus {
         return retval;
     }
 
-    private void copyKeypairAddr(int[] out, int[] in){
+    private void copyKeypairAddress(int[] out, int[] in){
         out[0] = in[0];
         out[1] = in[1];
         setByte(out, SPX_OFFSET_TREE+8-1, getByte(in, SPX_OFFSET_TREE+8-1));
@@ -377,8 +377,8 @@ public class SphincsPlus {
         int[] forsPkAddr = new int[8];
         int idxOffset;
 
-        copyKeypairAddr(forsTreeAddr, forsAddr);
-        copyKeypairAddr(forsPkAddr, forsAddr);
+        copyKeypairAddress(forsTreeAddr, forsAddr);
+        copyKeypairAddress(forsPkAddr, forsAddr);
 
         setByte(forsTreeAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSTREE);
         setByte(forsPkAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSPK);
@@ -471,14 +471,14 @@ public class SphincsPlus {
         return (byte) (in[index] >> (mod*8));
     }
 
-    private static void setKeyPairAddr(int[] addr, int keypair){
+    private static void setKeyPairAddress(int[] addr, int keypair){
         if(SPX_FULL_HEIGHT/SPX_D > 8){
             setByte(addr, SPX_OFFSET_KP_ADDR2, (byte) (keypair >> 8));
         }
         setByte(addr, SPX_OFFSET_KP_ADDR1, (byte) keypair);
     }
 
-    private static void setLayerAddr(int[] addr, int layer){
+    private static void setLayerAddress(int[] addr, int layer){
         if(SPX_OFFSET_LAYER == 0){
             addr[0] = layer;
             return;
@@ -487,7 +487,7 @@ public class SphincsPlus {
         throw new IllegalStateException("Unimplemented bit munging!");
     }
 
-    private static void copySubtreeAddr(int[] out, int[] in){
+    private static void copySubtreeAddress(int[] out, int[] in){
         System.arraycopy(in, 0, out, 0, 2);
         setByte(out, 8+SPX_OFFSET_TREE-1, getByte(in, 8+SPX_OFFSET_TREE-1));
     }
@@ -501,9 +501,9 @@ public class SphincsPlus {
         info.setWotsSteps(steps);
 
         setByte(treeAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_HASHTREE);
-        setByte(info.getPkAddr(), SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTSPK);
-        copySubtreeAddr(info.getLeafAddr(), wotsAddr);
-        copySubtreeAddr(info.getPkAddr(), wotsAddr);
+        setByte(info.getPkAddress(), SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTSPK);
+        copySubtreeAddress(info.getLeafAddress(), wotsAddr);
+        copySubtreeAddress(info.getPkAddress(), wotsAddr);
 
         info.setWotsSignLeaf(idxLeaf);
 
@@ -551,7 +551,7 @@ public class SphincsPlus {
         setByte(addr, SPX_OFFSET_TREE_INDEX+0, (byte) (treeIndex >> 24));
     }
 
-    private static void prfAddr(byte[] out, int outOffset, SphincsCtx ctx, int[] addr){
+    private static void prfAddress(byte[] out, int outOffset, SphincsCtx ctx, int[] addr){
         byte[] sha2State = new byte[40];
         byte[] buf = new byte[SPX_SHA256_ADDR_BYTES+SPX_N];
 
@@ -641,11 +641,11 @@ public class SphincsPlus {
     }
 
     private void forsGenLeafx1(byte[] leaf, int leafOffset, SphincsCtx ctx, int addrIdx, ForsGenLeafInfo info){
-        int[] forsLeafAddr = info.getLeafAddrX();
+        int[] forsLeafAddr = info.getLeafAddressX();
 
         setTreeIndex(forsLeafAddr, addrIdx);
         setByte(forsLeafAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSPRF);
-        prfAddr(leaf, leafOffset, ctx, forsLeafAddr);
+        prfAddress(leaf, leafOffset, ctx, forsLeafAddr);
 
         setByte(forsLeafAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_FORSTREE);
         thash(leaf, leafOffset, leaf, leafOffset, 1, ctx, forsLeafAddr);
@@ -685,9 +685,9 @@ public class SphincsPlus {
 
     private static void wotsGenLeafx1(byte[] dest, int destOffset, SphincsCtx ctx, int leafIdx, LeafInfoX1 vInfo){
         LeafInfoX1 info = vInfo;
-        int[] leafAddr = info.getLeafAddr();
+        int[] leafAddr = info.getLeafAddress();
 
-        int[] pkAddr = info.getPkAddr();
+        int[] pkAddr = info.getPkAddress();
         byte[] pkBuffer = new byte[SPX_WOTS_BYTES];
         int wotsKMask;
 
@@ -698,8 +698,8 @@ public class SphincsPlus {
             wotsKMask = ~0;
         }
 
-        setKeyPairAddr(leafAddr, leafIdx);
-        setKeyPairAddr(pkAddr, leafIdx);
+        setKeyPairAddress(leafAddr, leafIdx);
+        setKeyPairAddress(pkAddr, leafIdx);
 
         List<ForkJoinTask<Boolean>> thashes = new ArrayList<>();
 
@@ -743,7 +743,7 @@ public class SphincsPlus {
             setByte(leafAddr, SPX_OFFSET_HASH_ADDR, (byte) 0);
             setByte(leafAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTSPRF);
 
-            prfAddr(buffer, bufferOffset, ctx, leafAddr);
+            prfAddress(buffer, bufferOffset, ctx, leafAddr);
 
             setByte(leafAddr, SPX_OFFSET_TYPE, (byte) SPX_ADDR_TYPE_WOTS);
 

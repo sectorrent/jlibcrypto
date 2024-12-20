@@ -7,11 +7,11 @@ public class ForsGenLeafInfo {
     public ForsGenLeafInfo(){
     }
 
-    public void setLeafAddrX(int[] leafAddrX){
+    public void setLeafAddressX(int[] leafAddrX){
         this.leafAddrX = leafAddrX;
     }
 
-    public int[] getLeafAddrX(){
+    public int[] getLeafAddressX(){
         return leafAddrX;
     }
 }
