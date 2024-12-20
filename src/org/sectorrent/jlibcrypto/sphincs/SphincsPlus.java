@@ -4,7 +4,6 @@ import org.sectorrent.jlibcrypto.sphincs.utils.*;
 
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusParams.*;
