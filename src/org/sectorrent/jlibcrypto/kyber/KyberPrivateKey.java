@@ -4,6 +4,12 @@ import java.security.PrivateKey;
 
 public class KyberPrivateKey implements PrivateKey {
 
+    private byte[] key;
+
+    public KyberPrivateKey(byte[] key){
+        this.key = key;
+    }
+
     @Override
     public String getAlgorithm(){
         return "Kyber";
@@ -16,6 +22,6 @@ public class KyberPrivateKey implements PrivateKey {
 
     @Override
     public byte[] getEncoded(){
-        return new byte[0];
+        return key.clone();
     }
 }

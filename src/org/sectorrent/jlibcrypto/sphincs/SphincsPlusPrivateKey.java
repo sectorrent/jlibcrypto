@@ -4,14 +4,14 @@ import java.security.PrivateKey;
 
 public class SphincsPlusPrivateKey implements PrivateKey {
 
-    private final byte[] privateKey;
+    private final byte[] key;
 
-    public SphincsPlusPrivateKey(byte[] privateKey){
-        this.privateKey = privateKey;
+    public SphincsPlusPrivateKey(byte[] key){
+        this.key = key;
     }
 
     public byte[] getPrivateKeyBytes(){
-        return privateKey.clone();
+        return key.clone();
     }
 
     @Override
@@ -26,6 +26,6 @@ public class SphincsPlusPrivateKey implements PrivateKey {
 
     @Override
     public byte[] getEncoded(){
-        return privateKey.clone();
+        return key.clone();
     }
 }
