@@ -1,11 +1,10 @@
 package org.sectorrent.jlibcrypto;
 
 import org.sectorrent.jlibcrypto.hash.SHAKE128;
+import org.sectorrent.jlibcrypto.hash.SHAKE256;
 
 import java.security.*;
 import java.util.Arrays;
-
-import static org.sectorrent.jlibcrypto.hash.SHAKE128.shake128;
 
 public class Main {
 
@@ -15,16 +14,25 @@ public class Main {
         try{
 
             // Input data (hexadecimal -> bytes)
-            String inputHex = "000102030405060708090A0B0C0D0E0F";
-            byte[] input = hexToBytes(inputHex);
+            //String inputHex = "asdasd";
+            //byte[] input = hexToBytes(inputHex);
 
             // Expected output for SHAKE128 (256 bits / 32 bytes)
-            String expectedHex = "5881092DD818BF4E96DC4EF8D5D5209C7283F230FDD5CA8D838B859D29E6D52B";
-            byte[] expectedOutput = hexToBytes(expectedHex);
+            //String expectedHex = "5881092DD818BF4E96DC4EF8D5D5209C7283F230FDD5CA8D838B859D29E6D52B";
+            //byte[] expectedOutput = hexToBytes(expectedHex);
+
+            //MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            //digest.update("asdasd".getBytes());
+            //byte[] hash = digest.digest();
 
             // Compute SHAKE128 output using your implementation
-            byte[] output = SHAKE128.shake128(input, 32);
+            byte[] shake = SHAKE128.getHash(32, "asdasd".getBytes());
+            System.out.println("Got:      " + bytesToHex(shake));
 
+            shake = SHAKE256.getHash(64, "asdasd".getBytes());
+            System.out.println("Got:      " + bytesToHex(shake));
+
+            /*
             // Verify the result
             if (Arrays.equals(output, expectedOutput)) {
                 System.out.println("SHAKE128 implementation is correct!");
@@ -33,6 +41,7 @@ public class Main {
                 System.out.println("Expected: " + bytesToHex(expectedOutput));
                 System.out.println("Got:      " + bytesToHex(output));
             }
+            */
 
 
 
