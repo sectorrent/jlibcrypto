@@ -10,8 +10,6 @@ import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusParams.SPX_OFFSET_TRE
 
 public class TreeHash {
 
-    public static final ThreadLocal<MessageDigest> sha2 = ThreadLocal.withInitial(() -> getInstance());
-
     public static void treeHashX1(byte[] root, int rootOffset, byte[] authPath, int auth_pathOffset, SphincsCtx ctx, int leafIdx, int idxOffset, int treeHeight, GenLeaf genLeaf, int[] treeAddr){
         byte[] stack = new byte[treeHeight*SPX_N];
 
@@ -102,10 +100,15 @@ public class TreeHash {
         for(i = 0; (i+1)*SPX_SHA256_OUTPUT_BYTES <= outlen; i++){
             ByteUtils.u32ToBytes(inbuf, inlen, i);
 
-            MessageDigest md = sha2.get();
-            md.update(inbuf);
-            byte[] res = md.digest();
-            System.arraycopy(res, 0, out, outIndex, res.length);
+            try{
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                md.update(inbuf);
+                byte[] res = md.digest();
+                System.arraycopy(res, 0, out, outIndex, res.length);
+
+            }catch(NoSuchAlgorithmException e){
+                throw new RuntimeException(e);
+            }
 
             outIndex += SPX_SHA256_OUTPUT_BYTES;
         }
@@ -113,21 +116,17 @@ public class TreeHash {
         if(outlen > i*SPX_SHA256_OUTPUT_BYTES){
             ByteUtils.u32ToBytes(inbuf, inlen, i);
 
-            MessageDigest md = sha2.get();
-            md.update(inbuf);
-            byte[] res = md.digest();
-            System.arraycopy(res, 0, outbuf, 0, res.length);
+            try{
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                md.update(inbuf);
+                byte[] res = md.digest();
+                System.arraycopy(res, 0, outbuf, 0, res.length);
+
+            }catch(NoSuchAlgorithmException e){
+                throw new RuntimeException(e);
+            }
 
             System.arraycopy(outbuf, 0, out, outIndex, outlen-i*SPX_SHA256_OUTPUT_BYTES);
-        }
-    }
-
-    public static MessageDigest getInstance(){
-        try{
-            return MessageDigest.getInstance("SHA-256");
-
-        }catch(NoSuchAlgorithmException e){
-            throw new RuntimeException(e);
         }
     }
 }

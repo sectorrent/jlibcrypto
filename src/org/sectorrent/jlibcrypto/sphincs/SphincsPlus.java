@@ -4,6 +4,7 @@ import org.sectorrent.jlibcrypto.sphincs.utils.*;
 
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusParams.*;
@@ -180,37 +181,43 @@ public class SphincsPlus {
             buf[SPX_N+j] = (byte)0x36;
         }
 
-        MessageDigest hash = TreeHash.getInstance();
-        hash.update(buf, 0, 64);
+        try{
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(buf, 0, 64);
 
-        System.arraycopy(optrand, 0, buf, 0, SPX_N);
+            System.arraycopy(optrand, 0, buf, 0, SPX_N);
 
-        if(SPX_N+m.length < SPX_SHAX_BLOCK_BYTES){
-            System.arraycopy(m, 0, buf, SPX_N, m.length);
-            hash.update(buf, 0, m.length+SPX_N);
-            byte[]  digest = hash.digest();
-            System.arraycopy(digest, 0, buf, SPX_SHAX_BLOCK_BYTES, 32);
-        }else{
-            int initialCopySize = SPX_SHAX_BLOCK_BYTES-SPX_N;
-            System.arraycopy(m, 0, buf, SPX_N, initialCopySize);
-            hash.update(buf, 0, 64);
-            hash.update(m, initialCopySize, m.length-initialCopySize);
-            byte[] digest = hash.digest();
-            System.arraycopy(digest, 0, buf, SPX_SHAX_BLOCK_BYTES, 32);
+            if(SPX_N+m.length < SPX_SHAX_BLOCK_BYTES){
+                System.arraycopy(m, 0, buf, SPX_N, m.length);
+                md.update(buf, 0, m.length+SPX_N);
+                byte[]  digest = md.digest();
+                System.arraycopy(digest, 0, buf, SPX_SHAX_BLOCK_BYTES, 32);
+
+            }else{
+                int initialCopySize = SPX_SHAX_BLOCK_BYTES-SPX_N;
+                System.arraycopy(m, 0, buf, SPX_N, initialCopySize);
+                md.update(buf, 0, 64);
+                md.update(m, initialCopySize, m.length-initialCopySize);
+                byte[] digest = md.digest();
+                System.arraycopy(digest, 0, buf, SPX_SHAX_BLOCK_BYTES, 32);
+            }
+
+            for(int i = 0; i < SPX_N; i++){
+                buf[i] = (byte) (0x5c ^ skPrf[i]);
+            }
+
+            for(int j=0; j < SPX_SHAX_BLOCK_BYTES-SPX_N; j++){
+                buf[SPX_N+j] = 0x5c;
+            }
+
+            md.reset();
+            md.update(Arrays.copyOfRange(buf, 0, SPX_SHAX_BLOCK_BYTES+SPX_SHAX_OUTPUT_BYTES));
+            byte[] res = md.digest();
+            System.arraycopy(res, 0, buf, 0, res.length);
+
+        }catch(NoSuchAlgorithmException e){
+            throw new RuntimeException(e);
         }
-
-        for(int i = 0; i < SPX_N; i++){
-            buf[i] = (byte) (0x5c ^ skPrf[i]);
-        }
-
-        for(int j=0; j < SPX_SHAX_BLOCK_BYTES-SPX_N; j++){
-            buf[SPX_N+j] = 0x5c;
-        }
-
-        MessageDigest md = TreeHash.sha2.get();
-        md.update(Arrays.copyOfRange(buf, 0, SPX_SHAX_BLOCK_BYTES+SPX_SHAX_OUTPUT_BYTES));
-        byte[] res = md.digest();
-        System.arraycopy(res, 0, buf, 0, res.length);
 
         System.arraycopy(buf, 0, R, 0, SPX_N);
     }
@@ -240,10 +247,15 @@ public class SphincsPlus {
         if(SPX_N+SPX_PK_BYTES+m.length < SPX_INBLOCKS*SPX_SHAX_BLOCK_BYTES){
             System.arraycopy(m, 0, inbuf, SPX_N+SPX_PK_BYTES, m.length);
 
-            MessageDigest md = TreeHash.sha2.get();
-            md.update(Arrays.copyOfRange(inbuf, 0, SPX_N+SPX_PK_BYTES+m.length));
-            byte[] res = md.digest();
-            System.arraycopy(res, 0, seed, 2*SPX_N, res.length);
+            try{
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                md.update(Arrays.copyOfRange(inbuf, 0, SPX_N+SPX_PK_BYTES+m.length));
+                byte[] res = md.digest();
+                System.arraycopy(res, 0, seed, 2*SPX_N, res.length);
+
+            }catch(NoSuchAlgorithmException e){
+                throw new RuntimeException(e);
+            }
 
         }else{
             int initialCopySize = SPX_INBLOCKS*SPX_SHAX_BLOCK_BYTES-SPX_N-SPX_PK_BYTES;
