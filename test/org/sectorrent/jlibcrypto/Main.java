@@ -11,7 +11,7 @@ public class Main {
 
         try{
             // Generate a key pair
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("SPHINCSPLUS");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("SphincsPlus");
             keyGen.initialize(256);
             KeyPair keyPair = keyGen.generateKeyPair();
 
@@ -22,7 +22,7 @@ public class Main {
             byte[] message = hexToBytes("133038bbb8225cc1a5bff68f704de766ddbd315b61cd7a66006cdb6b99a116f3df3be01d842391100e6c41a42ed126a7c55b35128b20476d1acd2c2a2891a3b266106d9b3541bb7818123af5ca0b79ee490c3cc9cef9a8e8c43f2141f563d8336924898e");
 
             // Sign data
-            Signature signature = Signature.getInstance("SPHINCSPLUS");
+            Signature signature = Signature.getInstance("SphincsPlus");
             signature.initSign(keyPair.getPrivate());
             signature.update(message);
             byte[] signed = signature.sign();

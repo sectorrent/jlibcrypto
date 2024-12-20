@@ -28,7 +28,7 @@ public class SphincsPlus {
     public byte[] sign(){
         byte[] sig = new byte[SPX_BYTES+message.length];
         SphincsCtx ctx = new SphincsCtx();
-        byte[] skPrf = Arrays.copyOfRange(key, SPX_N,  key.length);;
+        byte[] skPrf = Arrays.copyOfRange(key, SPX_N, key.length);
         byte[] pk = Arrays.copyOfRange(key, 2*SPX_N, key.length);
 
         byte[] optrand = new byte[SPX_N];
