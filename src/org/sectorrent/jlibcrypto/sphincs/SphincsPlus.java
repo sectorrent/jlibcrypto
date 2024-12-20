@@ -684,14 +684,14 @@ public class SphincsPlus {
     }
 
     private static void wotsGenLeafx1(byte[] dest, int destOffset, SphincsCtx ctx, int leafIdx, LeafInfoX1 vInfo){
-        LeafInfoX1 info = vInfo;
-        int[] leafAddr = info.getLeafAddress();
+        //LeafInfoX1 info = vInfo;
+        int[] leafAddr = vInfo.getLeafAddress();
 
-        int[] pkAddr = info.getPkAddress();
+        int[] pkAddr = vInfo.getPkAddress();
         byte[] pkBuffer = new byte[SPX_WOTS_BYTES];
         int wotsKMask;
 
-        if(leafIdx == info.getWotsSignLeaf()){
+        if(leafIdx == vInfo.getWotsSignLeaf()){
             wotsKMask = 0;
 
         }else{
@@ -718,10 +718,10 @@ public class SphincsPlus {
             int[] addrs = Arrays.copyOfRange(leafAddr, 0, leafAddr.length);
 
             if(j == splits.size()-2){
-                wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pkBuffer, splits.get(jCopy)*SPX_N, wotsKMask, addrs, info, ctx);
+                wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pkBuffer, splits.get(jCopy)*SPX_N, wotsKMask, addrs, vInfo, ctx);
 
             }else{
-                ForkJoinTask<Boolean> task = ForkJoinPool.commonPool().submit(() -> wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pkBuffer, splits.get(jCopy)*SPX_N, wotsKMask, addrs, info, ctx));
+                ForkJoinTask<Boolean> task = ForkJoinPool.commonPool().submit(() -> wotsLoops(splits.get(jCopy), splits.get(jCopy+1), pkBuffer, splits.get(jCopy)*SPX_N, wotsKMask, addrs, vInfo, ctx));
                 thashes.add(task);
             }
         }
