@@ -6,6 +6,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 
 public class Indcpa {
+
     /*
     public static KyberPackedPKI generateKyberKeys(int paramsK) {
         KyberPackedPKI packedPKI = new KyberPackedPKI();
@@ -57,5 +58,17 @@ public class Indcpa {
         }
 
         return packedPKI;
-    }*/
+    }
+
+    public static byte[] generatePRFByteArray(int l, byte[] key, byte nonce){
+        byte[] hash = new byte[l];
+        KeccakSponge xof = new Shake256();
+        byte[] newKey = new byte[key.length + 1];
+        System.arraycopy(key, 0, newKey, 0, key.length);
+        newKey[key.length] = nonce;
+        xof.getAbsorbStream().write(newKey);
+        xof.getSqueezeStream().read(hash);
+        return hash;
+    }
+    */
 }

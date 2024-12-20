@@ -4,11 +4,11 @@ public class KyberParams {
 
     public final static int PARAMS_N = 256;
     public final static int PARAMS_Q = 3329;
-    public final static int PARAMS_QINY = 62209;
+    public final static int PARAMS_QINV = 62209;
     public final static int PARAMS_SYM_BYTES = 32;
     public final static int PARAMS_POLY_BYTES = 384;
     public final static int PARAMS_ETAK512 = 3;
-    public final static int PARAMS_ETAK768K1024 = 2;
+    public final static int PARAMS_ETAK768_K1024 = 2;
     public final static int PARAMS_POLYVEC_BYTES_K512 = 2 * PARAMS_POLY_BYTES;
     public final static int PARAMS_POLYVEC_BYTES_K768 = 3 * PARAMS_POLY_BYTES;
     public final static int PARAMS_POLYVEC_BYTES_K1024 = 4 * PARAMS_POLY_BYTES;
