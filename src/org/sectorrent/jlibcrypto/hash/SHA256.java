@@ -47,6 +47,7 @@ public class SHA256 extends MessageDigest {
 
     public SHA256(byte[] state, int count){
         super("SHA-256");
+
         this.h[0] = parseInt(state, 0);
         this.h[1] = parseInt(state, 4);
         this.h[2] = parseInt(state, 8);
