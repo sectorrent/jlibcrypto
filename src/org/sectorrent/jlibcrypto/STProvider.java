@@ -10,6 +10,10 @@ public class STProvider extends Provider {
         put("Signature.SphincsPlus", "org.sectorrent.jlibcrypto.sphincs.SphincsPlusSignature");
         put("KeyPairGenerator.SphincsPlus", "org.sectorrent.jlibcrypto.sphincs.SphincsPlusKeyPairGenerator");
 
+        put("KeyPairGenerator.Kyber512", "org.sectorrent.jlibcrypto.kyber.Kyber512KeyPairGenerator");
+        put("KeyPairGenerator.Kyber768", "org.sectorrent.jlibcrypto.kyber.Kyber768KeyPairGenerator");
+        put("KeyPairGenerator.Kyber1024", "org.sectorrent.jlibcrypto.kyber.Kyber1024KeyPairGenerator");
+
         put("MessageDigest.SHA-256", "org.sectorrent.jlibcrypto.hash.SHA256");
         put("MessageDigest.CRC32C", "org.sectorrent.jlibcrypto.hash.CRC32c");
     }
