@@ -18,31 +18,33 @@ public class SHAKE256 {
             {27, 20, 39, 8, 14}
     };
 
-    public static byte[] getHash(int hashByteLength, byte[] message) {
+    public static byte[] getHash(int hashByteLength, byte[] message){
         return getHash(hashByteLength, message, 0, message.length);
     }
 
-    public static byte[] getHash(int hashByteLength, byte[] message, int messageStart, int messageLength) {
-        if (hashByteLength < 2) {
+    public static byte[] getHash(int hashByteLength, byte[] message, int messageStart, int messageLength){
+        if(hashByteLength < 2){
             throw new UnsupportedOperationException("Too small hash length, require hashByteLength >= 2");
         }
-        if (hashByteLength > 8192) {
+
+        if(hashByteLength > 8192){
             throw new UnsupportedOperationException("Too big hash length, require hashByteLength <= 8192");
         }
 
-        long[][] a = new long[5][5]; // State array
-        long[][] b = new long[5][5]; // Intermediate variable
-        long[] c = new long[5]; // Intermediate variable
-        long[] d = new long[5]; // Intermediate variable
-        long[] block = new long[17]; // 1088-bit block (17 * 64 bits)
+        long[][] a = new long[5][5];
+        long[][] b = new long[5][5];
+        long[] c = new long[5];
+        long[] d = new long[5];
+        long[] block = new long[17];
         int blockPos = 0;
         int messagePos = messageStart;
-        int stop = messageStart + messageLength - 7;
+        int stop = messageStart+messageLength-7;
 
-        while (messagePos < stop) {
+        while(messagePos < stop){
             block[blockPos++] = getWord(message, messagePos);
             messagePos += 8;
-            if (blockPos == 17) {
+
+            if(blockPos == 17){
                 blockPos = 0;
                 hashBlock(block, a, b, c, d);
             }
@@ -51,35 +53,41 @@ public class SHAKE256 {
         byte[] buffer = new byte[8];
         int bufferPos = 0;
 
-        while (messagePos < messageStart + messageLength) {
+        while(messagePos < messageStart+messageLength){
             buffer[bufferPos++] = message[messagePos++];
         }
 
         buffer[bufferPos] = (byte) 0x1F; // Domain separator for SHAKE256
-        if (blockPos == 16) {
+        if(blockPos == 16){
             buffer[7] |= 0x80;
-        } else {
+
+        }else{
             block[blockPos++] = getWord(buffer, 0);
-            while (blockPos < 16) {
+
+            while(blockPos < 16){
                 block[blockPos++] = 0L;
             }
+
             buffer = new byte[8];
             buffer[7] |= 0x80;
         }
+
         block[blockPos] = getWord(buffer, 0);
         hashBlock(block, a, b, c, d);
 
         byte[] hash = new byte[hashByteLength];
         int hashPos = 0;
 
-        while (true) {
-            for (int y = 0; y < 5; y++) {
-                for (int x = 0; x < 5; x++) {
-                    if (x + 5 * y < 17) {
+        while(true){
+            for(int y = 0; y < 5; y++){
+                for(int x = 0; x < 5; x++){
+                    if(x + 5 * y < 17){
                         long word = a[x][y];
-                        for (int i = 0; i < 8; i++) {
+
+                        for(int i = 0; i < 8; i++){
                             hash[hashPos++] = (byte) word;
-                            if (hashPos == hashByteLength) {
+
+                            if(hashPos == hashByteLength){
                                 return hash;
                             }
                             word >>= 8;
@@ -91,7 +99,7 @@ public class SHAKE256 {
         }
     }
 
-    private static long getWord(byte[] bytes, int bytesStart) {
+    private static long getWord(byte[] bytes, int bytesStart){
         return (bytes[bytesStart] & 0xFFL) |
                 (bytes[bytesStart + 1] & 0xFFL) << 8 |
                 (bytes[bytesStart + 2] & 0xFFL) << 16 |
@@ -102,39 +110,45 @@ public class SHAKE256 {
                 (bytes[bytesStart + 7] & 0xFFL) << 56;
     }
 
-    private static void hashBlock(long[] block, long[][] a, long[][] b, long[] c, long[] d) {
-        for (int y = 0; y < 5; y++) {
-            for (int x = 0; x < 5; x++) {
+    private static void hashBlock(long[] block, long[][] a, long[][] b, long[] c, long[] d){
+        for(int y = 0; y < 5; y++){
+            for(int x = 0; x < 5; x++){
                 int index = x + 5 * y;
-                if (index >= block.length){
-                    break; // Ensure we don't access out-of-bounds
+
+                if(index >= block.length){
+                    break;
                 }
+
                 a[x][y] ^= block[index];
             }
         }
         f(a, b, c, d);
     }
 
-    private static void f(long[][] a, long[][] b, long[] c, long[] d) {
-        for (int i = 0; i < 24; i++) {
-            for (int x = 0; x < 5; x++) {
+    private static void f(long[][] a, long[][] b, long[] c, long[] d){
+        for(int i = 0; i < 24; i++){
+            for(int x = 0; x < 5; x++){
                 c[x] = a[x][0] ^ a[x][1] ^ a[x][2] ^ a[x][3] ^ a[x][4];
             }
-            for (int x = 0; x < 5; x++) {
+
+            for(int x = 0; x < 5; x++){
                 d[x] = c[(x + 4) % 5] ^ rot(c[(x + 1) % 5], 1);
             }
-            for (int y = 0; y < 5; y++) {
-                for (int x = 0; x < 5; x++) {
+
+            for(int y = 0; y < 5; y++){
+                for (int x = 0; x < 5; x++){
                     a[x][y] ^= d[x];
                 }
             }
-            for (int y = 0; y < 5; y++) {
-                for (int x = 0; x < 5; x++) {
+
+            for(int y = 0; y < 5; y++){
+                for(int x = 0; x < 5; x++){
                     b[y][(2 * x + 3 * y) % 5] = rot(a[x][y], R[x][y]);
                 }
             }
-            for (int y = 0; y < 5; y++) {
-                for (int x = 0; x < 5; x++) {
+
+            for(int y = 0; y < 5; y++){
+                for(int x = 0; x < 5; x++){
                     a[x][y] = b[x][y] ^ (~b[(x + 1) % 5][y] & b[(x + 2) % 5][y]);
                 }
             }
@@ -142,7 +156,7 @@ public class SHAKE256 {
         }
     }
 
-    private static long rot(long x, int s) {
+    private static long rot(long x, int s){
         return (x << s) | (x >>> (64 - s));
     }
 }
