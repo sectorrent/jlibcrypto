@@ -3,7 +3,7 @@ package org.sectorrent.jlibcrypto.sphincs;
 import org.sectorrent.jlibcrypto.hash.SHA256;
 import org.sectorrent.jlibcrypto.sphincs.utils.*;
 
-import java.security.KeyPair;
+import java.security.InvalidParameterException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
-import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPrivateKey.SPX_SK_BYTES;
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusPublicKey.SPX_PK_BYTES;
 import static org.sectorrent.jlibcrypto.sphincs.utils.SphincsCtx.SPX_SHA256_BLOCK_BYTES;
 
@@ -156,7 +155,7 @@ public class SphincsPlus {
 
     public void update(byte[] b, int off, int len){
         if(off > len){
-            throw new IllegalArgumentException("Offset is greater than length");
+            throw new InvalidParameterException("Offset is greater than length");
         }
 
         if(message == null){
@@ -235,24 +234,7 @@ public class SphincsPlus {
         return Arrays.equals(Arrays.copyOfRange(sig, SPX_BYTES, sig.length), message);
     }
 
-    public static KeyPair generateKeys(byte[] seed){
-        byte[] publicKey = new byte[SPX_PK_BYTES];
-        byte[] privateKey = new byte[SPX_SK_BYTES];
-
-        SphincsCtx ctx = new SphincsCtx();
-        System.arraycopy(seed, 0, privateKey, 0, CRYPTO_SEED_BYTES);
-        System.arraycopy(privateKey, 2*SPX_N, publicKey, 0, SPX_N);
-        ctx.setPubSeed(Arrays.copyOfRange(publicKey, 0, SPX_N));
-        ctx.setSkSeed(Arrays.copyOfRange(privateKey, 0, SPX_N));
-
-        ctx.seedState();
-        merkleGenRoot(privateKey, 3*SPX_N, ctx);
-        System.arraycopy(privateKey, 3*SPX_N, publicKey, SPX_N, SPX_N);
-
-        return new KeyPair(new SphincsPlusPublicKey(publicKey), new SphincsPlusPrivateKey(privateKey));
-    }
-
-    private static void merkleGenRoot(byte[] root, int rootOffset, SphincsCtx ctx){
+    protected static void merkleGenRoot(byte[] root, int rootOffset, SphincsCtx ctx){
         byte[] authPath = new byte[SPX_TREE_HEIGHT*SPX_N+SPX_WOTS_BYTES];
         int[] topTreeAddr = new int[8];
         int[] wotsAddr = new int[8];
