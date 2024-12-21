@@ -261,7 +261,7 @@ public class Indcpa {
             byte[] publicSeed = new byte[KyberParams.PARAMS_SYM_BYTES];
             byte[] noiseSeed = new byte[KyberParams.PARAMS_SYM_BYTES];
 
-            MessageDigest h = MessageDigest.getInstance("SHA-512");//SHA3-512
+            MessageDigest h = MessageDigest.getInstance("SHA3-512");
             SecureRandom sr = SecureRandom.getInstanceStrong();
             sr.nextBytes(publicSeed);
             byte[] fullSeed = h.digest(publicSeed);

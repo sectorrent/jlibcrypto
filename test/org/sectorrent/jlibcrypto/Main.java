@@ -1,5 +1,6 @@
 package org.sectorrent.jlibcrypto;
 
+import org.sectorrent.jlibcrypto.hash.SHA3_512;
 import org.sectorrent.jlibcrypto.hash.SHAKE128;
 import org.sectorrent.jlibcrypto.hash.SHAKE256;
 
@@ -12,23 +13,14 @@ public class Main {
         Security.addProvider(new STProvider());
 
         try{
-            byte[] shake = SHAKE128.getHash(32, "asdasd".getBytes());
-            System.out.println("Got:      " + bytesToHex(shake));
-
-            shake = SHAKE256.getHash(64, "asdasd".getBytes());
-            System.out.println("Got:      " + bytesToHex(shake));
-
-
-            MessageDigest digest = MessageDigest.getInstance("SHA2-256");
-            digest.update("asdasd".getBytes());
-            System.out.println("SHA:      " + bytesToHex(digest.digest()));
-
-            /*
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("Kyber512");
             keyGen.initialize(512);
             KeyPair keyPair = keyGen.generateKeyPair();
-            */
 
+            System.out.println("SK: "+bytesToHex(keyPair.getPrivate().getEncoded()));
+            System.out.println("PK: "+bytesToHex(keyPair.getPublic().getEncoded()));
+
+            /*
             // Generate a key pair
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("SphincsPlus");
             keyGen.initialize(256);
@@ -53,6 +45,7 @@ public class Main {
             signature.update(message);
 
             System.out.println("SIGNATURE VERIFIED: "+signature.verify(signed));
+            */
 
         }catch(Exception e){
             e.printStackTrace();

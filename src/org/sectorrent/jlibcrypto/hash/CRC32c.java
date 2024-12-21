@@ -9,7 +9,7 @@ public class CRC32c extends MessageDigest {
 
     public CRC32c(){
         super("CRC32C");
-        crc = 0xffffffff;
+        engineReset();
     }
 
     @Override

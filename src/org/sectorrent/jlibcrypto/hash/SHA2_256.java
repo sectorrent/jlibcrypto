@@ -43,6 +43,7 @@ public class SHA2_256 extends MessageDigest {
 
     public SHA2_256(){
         super("SHA2-256");
+        engineReset();
     }
 
     public SHA2_256(byte[] state, int count){

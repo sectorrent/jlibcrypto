@@ -19,7 +19,8 @@ to implement it later on.
 | Algorithms | Support                                         |
 | ---        | ---                                             |
 | SHA2-256   | Done                                            |
-| SHA3-512   | In Progress                                     |
+| SHA3-256   | Done                                            |
+| SHA3-512   | Done                                            |
 | CRC32c     | Done                                            |
 
 **Sponge Algorithms**

@@ -15,6 +15,8 @@ public class STProvider extends Provider {
         put("KeyPairGenerator.Kyber1024", "org.sectorrent.jlibcrypto.kyber.Kyber1024KeyPairGenerator");
 
         put("MessageDigest.SHA2-256", "org.sectorrent.jlibcrypto.hash.SHA2_256");
+        put("MessageDigest.SHA3-256", "org.sectorrent.jlibcrypto.hash.SHA3_256");
+        put("MessageDigest.SHA3-512", "org.sectorrent.jlibcrypto.hash.SHA3_512");
         put("MessageDigest.CRC32C", "org.sectorrent.jlibcrypto.hash.CRC32c");
     }
 }

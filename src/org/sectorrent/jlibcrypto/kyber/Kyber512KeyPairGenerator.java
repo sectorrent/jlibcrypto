@@ -33,7 +33,7 @@ public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
             byte[] packedPrivateKey = indcpaPKI.getPackedPrivateKey();
             byte[] privateKeyFixedLength = new byte[KyberParams.KYBER_512SK_BYTES];
 
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("SHA3-256");
             byte[] encodedHash = md.digest(packedPublicKey);
             byte[] pkh = new byte[encodedHash.length];
             System.arraycopy(encodedHash, 0, pkh, 0, encodedHash.length);
