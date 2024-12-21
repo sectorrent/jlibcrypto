@@ -38,7 +38,7 @@ public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
             byte[] pkh = new byte[encodedHash.length];
             System.arraycopy(encodedHash, 0, pkh, 0, encodedHash.length);
             byte[] rnd = new byte[KyberParams.PARAMS_SYM_BYTES];
-            random.nextBytes(rnd);
+            //random.nextBytes(rnd);
             int offsetEnd = packedPrivateKey.length;
             System.arraycopy(packedPrivateKey, 0, privateKeyFixedLength, 0, offsetEnd);
             System.arraycopy(packedPublicKey, 0, privateKeyFixedLength, offsetEnd, packedPublicKey.length);

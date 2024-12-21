@@ -186,34 +186,23 @@ public class Indcpa {
         short[][][] r = new short[paramsK][paramsK][KyberParams.PARAMS_POLY_BYTES];
         byte[] buf = new byte[672];
         KyberUniformRandom uniformRandom = new KyberUniformRandom();
-        //KeccakSponge xof = new Shake128();
         byte[] s = new byte[seed.length+2];
         System.arraycopy(seed, 0, s, 0, seed.length);
 
         for (int i = 0; i < paramsK; i++) {
             r[i] = Poly.generateNewPolyVector(paramsK);
             for (int j = 0; j < paramsK; j++) {
-                //xof.reset();
-                //xof.getAbsorbStream().write(seed);
-
-                //byte[] ij = new byte[2];
                 if (transposed) {
-                    //ij[0] = (byte) i;
-                    //ij[1] = (byte) j;
-                    s[seed.length-2] = (byte) i;
-                    s[seed.length-1] = (byte) j;
+                    s[seed.length] = (byte) i;
+                    s[seed.length+1] = (byte) j;
 
                 } else {
-                    //ij[0] = (byte) j;
-                    //ij[1] = (byte) i;
-                    s[seed.length-2] = (byte) j;
-                    s[seed.length-1] = (byte) i;
+                    s[seed.length] = (byte) j;
+                    s[seed.length+1] = (byte) i;
                 }
 
-                buf = SHAKE_128.getHash(32, s); //LENGTH COULD BE A PROBLEM...
+                buf = SHAKE_128.getHash(buf.length, s);
 
-                //xof.getAbsorbStream().write(ij);
-                //xof.getSqueezeStream().read(buf);
                 generateUniform(uniformRandom, Arrays.copyOfRange(buf, 0, 504), 504, KyberParams.PARAMS_N);
                 int ui = uniformRandom.getUniformI();
                 r[i][j] = uniformRandom.getUniformR();
@@ -245,7 +234,7 @@ public class Indcpa {
         byte[] newKey = new byte[key.length + 1];
         System.arraycopy(key, 0, newKey, 0, key.length);
         newKey[key.length] = nonce;
-        return SHAKE_256.getHash(/*64*/l, newKey); //LENGTH COULD BE A PROBLEM...
+        return SHAKE_256.getHash(l, newKey);
     }
 
     /**
@@ -262,8 +251,8 @@ public class Indcpa {
             byte[] noiseSeed = new byte[KyberParams.PARAMS_SYM_BYTES];
 
             MessageDigest h = MessageDigest.getInstance("SHA3-512");
-            SecureRandom sr = SecureRandom.getInstanceStrong();
-            sr.nextBytes(publicSeed);
+            //SecureRandom sr = SecureRandom.getInstanceStrong();
+            //sr.nextBytes(publicSeed);
             byte[] fullSeed = h.digest(publicSeed);
 
             System.arraycopy(fullSeed, 0, publicSeed, 0, KyberParams.PARAMS_SYM_BYTES);
