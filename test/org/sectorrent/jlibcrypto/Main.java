@@ -1,11 +1,6 @@
 package org.sectorrent.jlibcrypto;
 
-import org.sectorrent.jlibcrypto.hash.SHA3_512;
-import org.sectorrent.jlibcrypto.hash.SHAKE128;
-import org.sectorrent.jlibcrypto.hash.SHAKE256;
-
 import java.security.*;
-import java.util.Arrays;
 
 public class Main {
 

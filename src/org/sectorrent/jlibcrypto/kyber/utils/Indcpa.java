@@ -1,7 +1,7 @@
 package org.sectorrent.jlibcrypto.kyber.utils;
 
-import org.sectorrent.jlibcrypto.hash.SHAKE128;
-import org.sectorrent.jlibcrypto.hash.SHAKE256;
+import org.sectorrent.jlibcrypto.hash.SHAKE_128;
+import org.sectorrent.jlibcrypto.hash.SHAKE_256;
 import org.sectorrent.jlibcrypto.kyber.KyberPackedPKI;
 import org.sectorrent.jlibcrypto.kyber.KyberParams;
 import org.sectorrent.jlibcrypto.kyber.KyberUniformRandom;
@@ -210,7 +210,7 @@ public class Indcpa {
                     s[seed.length-1] = (byte) i;
                 }
 
-                buf = SHAKE128.getHash(32, s); //LENGTH COULD BE A PROBLEM...
+                buf = SHAKE_128.getHash(32, s); //LENGTH COULD BE A PROBLEM...
 
                 //xof.getAbsorbStream().write(ij);
                 //xof.getSqueezeStream().read(buf);
@@ -245,7 +245,7 @@ public class Indcpa {
         byte[] newKey = new byte[key.length + 1];
         System.arraycopy(key, 0, newKey, 0, key.length);
         newKey[key.length] = nonce;
-        return SHAKE256.getHash(/*64*/l, newKey); //LENGTH COULD BE A PROBLEM...
+        return SHAKE_256.getHash(/*64*/l, newKey); //LENGTH COULD BE A PROBLEM...
     }
 
     /**
