@@ -18,7 +18,14 @@ to implement it later on.
 **Non Quantum Proof Algorithms**
 | Algorithms | Support                                         |
 | ---        | ---                                             |
-| SHA-256    | Done                                            |
+| SHA2-256   | Done                                            |
+| SHA3-512   | In Progress                                     |
 | CRC32c     | Done                                            |
+
+**Sponge Algorithms**
+| Algorithms | Support                                         |
+| ---        | ---                                             |
+| SHAKE-128  | Done                                            |
+| SHAKE-256  | Done                                            |
 
 I have implemented non-quantum proof hashing algorithms as SHA-256 is required for Sphincs+ and CRC32c is required for Kademlia, however neither is a security risk of any sense.
