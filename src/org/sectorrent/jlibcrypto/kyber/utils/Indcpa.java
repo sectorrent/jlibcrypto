@@ -259,21 +259,26 @@ public class Indcpa {
             System.arraycopy(fullSeed, KyberParams.PARAMS_SYM_BYTES, noiseSeed, 0, KyberParams.PARAMS_SYM_BYTES);
             short[][][] a = generateMatrix(publicSeed, false, paramsK);
             byte nonce = (byte) 0;
+
             for (int i = 0; i < paramsK; i++) {
                 skpv[i] = Poly.getNoisePoly(noiseSeed, nonce, paramsK);
                 nonce = (byte) (nonce + (byte) 1);
             }
+
             for (int i = 0; i < paramsK; i++) {
                 e[i] = Poly.getNoisePoly(noiseSeed, nonce, paramsK);
                 nonce = (byte) (nonce + (byte) 1);
             }
+
             skpv = Poly.polyVectorNTT(skpv, paramsK);
             skpv = Poly.polyVectorReduce(skpv, paramsK);
             e = Poly.polyVectorNTT(e, paramsK);
+
             for (int i = 0; i < paramsK; i++) {
                 short[] temp = Poly.polyVectorPointWiseAccMont(a[i], skpv, paramsK);
                 pkpv[i] = Poly.polyToMont(temp);
             }
+
             pkpv = Poly.polyVectorAdd(pkpv, e, paramsK);
             pkpv = Poly.polyVectorReduce(pkpv, paramsK);
             packedPKI.setPackedPrivateKey(packPrivateKey(skpv, paramsK));

@@ -47,11 +47,27 @@ public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
             offsetEnd += pkh.length;
             System.arraycopy(rnd, 0, privateKeyFixedLength, offsetEnd, rnd.length);
 
+            System.out.println("PK A: "+bytesToHex(packedPublicKey));
+            System.out.println("SK A: "+bytesToHex(packedPrivateKey));
+
             return new KyberPKI(new KyberPublicKey(packedPublicKey), new KyberPrivateKey(privateKeyFixedLength));
 
         }catch(Exception ex){
             ex.printStackTrace();
             throw new RuntimeException("generateKeys512 Exception! [" + ex.getMessage() + "]");
         }
+    }
+
+    // Helper function to convert bytes to a hex string
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xFF & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }
