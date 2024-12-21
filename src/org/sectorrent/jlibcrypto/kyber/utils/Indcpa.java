@@ -1,7 +1,10 @@
 package org.sectorrent.jlibcrypto.kyber.utils;
 
 import org.sectorrent.jlibcrypto.hash.SHAKE128;
+import org.sectorrent.jlibcrypto.hash.SHAKE256;
+import org.sectorrent.jlibcrypto.kyber.KyberPackedPKI;
 import org.sectorrent.jlibcrypto.kyber.KyberParams;
+import org.sectorrent.jlibcrypto.kyber.KyberUniformRandom;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -148,8 +151,6 @@ public class Indcpa {
      * @param l
      * @return
      */
-
-    /*
     public static void generateUniform(KyberUniformRandom uniformRandom, byte[] buf, int bufl, int l) {
         short[] uniformR = new short[KyberParams.PARAMS_POLY_BYTES];
         int d1;
@@ -171,7 +172,7 @@ public class Indcpa {
         }
         uniformRandom.setUniformI(uniformI);
         uniformRandom.setUniformR(uniformR);
-    }*/
+    }
 
     /**
      * Generate a polynomial vector matrix from the given seed
@@ -181,13 +182,11 @@ public class Indcpa {
      * @param paramsK
      * @return
      */
-    /*
     public static short[][][] generateMatrix(byte[] seed, boolean transposed, int paramsK) {
         short[][][] r = new short[paramsK][paramsK][KyberParams.PARAMS_POLY_BYTES];
         byte[] buf = new byte[672];
         KyberUniformRandom uniformRandom = new KyberUniformRandom();
         //KeccakSponge xof = new Shake128();
-        SHAKE128 xof = new SHAKE128();
         byte[] s = new byte[seed.length+2];
         System.arraycopy(seed, 0, s, 0, seed.length);
 
@@ -211,7 +210,7 @@ public class Indcpa {
                     s[seed.length-1] = (byte) i;
                 }
 
-                buf = xof.getHash(32, s);
+                buf = SHAKE128.getHash(32, s); //LENGTH COULD BE A PROBLEM...
 
                 //xof.getAbsorbStream().write(ij);
                 //xof.getSqueezeStream().read(buf);
@@ -219,7 +218,7 @@ public class Indcpa {
                 int ui = uniformRandom.getUniformI();
                 r[i][j] = uniformRandom.getUniformR();
 
-                while (ui < KyberParams.paramsN) {
+                while (ui < KyberParams.PARAMS_N) {
                     generateUniform(uniformRandom, Arrays.copyOfRange(buf, 504, 672), 168, KyberParams.PARAMS_N - ui);
                     int ctrn = uniformRandom.getUniformI();
                     short[] missing = uniformRandom.getUniformR();
@@ -231,7 +230,7 @@ public class Indcpa {
             }
         }
         return r;
-    }*/
+    }
 
     /**
      * Pseudo-random function to derive a deterministic array of random bytes
@@ -242,23 +241,17 @@ public class Indcpa {
      * @param nonce
      * @return
      */
-    /*
     public static byte[] generatePRFByteArray(int l, byte[] key, byte nonce) {
-        byte[] hash = new byte[l];
-        KeccakSponge xof = new Shake256();
         byte[] newKey = new byte[key.length + 1];
         System.arraycopy(key, 0, newKey, 0, key.length);
         newKey[key.length] = nonce;
-        xof.getAbsorbStream().write(newKey);
-        xof.getSqueezeStream().read(hash);
-        return hash;
-    }*/
+        return SHAKE256.getHash(/*64*/l, newKey); //LENGTH COULD BE A PROBLEM...
+    }
 
     /**
      * Generates public and private keys for the CPA-secure public-key
      * encryption scheme underlying Kyber.
      */
-    /*
     public static KyberPackedPKI generateKyberKeys(int paramsK) {
         KyberPackedPKI packedPKI = new KyberPackedPKI();
         try {
@@ -268,7 +261,7 @@ public class Indcpa {
             byte[] publicSeed = new byte[KyberParams.PARAMS_SYM_BYTES];
             byte[] noiseSeed = new byte[KyberParams.PARAMS_SYM_BYTES];
 
-            MessageDigest h = MessageDigest.getInstance("SHA3-512");
+            MessageDigest h = MessageDigest.getInstance("SHA-512");//SHA3-512
             SecureRandom sr = SecureRandom.getInstanceStrong();
             sr.nextBytes(publicSeed);
             byte[] fullSeed = h.digest(publicSeed);
@@ -296,12 +289,13 @@ public class Indcpa {
             pkpv = Poly.polyVectorReduce(pkpv, paramsK);
             packedPKI.setPackedPrivateKey(packPrivateKey(skpv, paramsK));
             packedPKI.setPackedPublicKey(packPublicKey(pkpv, publicSeed, paramsK));
+
         } catch (Exception ex) {
             System.out.println("generateKyberKeys Exception! [" + ex.getMessage() + "]");
             ex.printStackTrace();
         }
         return packedPKI;
-    }*/
+    }
 
     /**
      * Encrypt the given message using the Kyber public-key encryption scheme
@@ -312,7 +306,6 @@ public class Indcpa {
      * @param paramsK
      * @return
      */
-    /*
     public static byte[] encrypt(byte[] m, byte[] publicKey, byte[] coins, int paramsK) {
         short[][] sp = Poly.generateNewPolyVector(paramsK);
         short[][] ep = Poly.generateNewPolyVector(paramsK);
@@ -340,7 +333,7 @@ public class Indcpa {
         bp = Poly.polyVectorReduce(bp, paramsK);
 
         return packCiphertext(bp, Poly.polyReduce(v), paramsK);
-    }*/
+    }
 
     /**
      * Decrypt the given byte array using the Kyber public-key encryption scheme

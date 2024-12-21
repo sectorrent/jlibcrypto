@@ -1,5 +1,7 @@
 package org.sectorrent.jlibcrypto.kyber;
 
+import org.sectorrent.jlibcrypto.kyber.utils.Indcpa;
+
 import java.security.*;
 
 public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
@@ -24,20 +26,19 @@ public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
 
     private KyberPKI generateKeys(){
         int paramsK = 2;
-        return null;
-        //KyberPKI kyberPKI = new KyberPKI();
-        //try{
-        /*
+
+        try{
             KyberPackedPKI indcpaPKI = Indcpa.generateKyberKeys(paramsK);
             byte[] packedPublicKey = indcpaPKI.getPackedPublicKey();
             byte[] packedPrivateKey = indcpaPKI.getPackedPrivateKey();
-            byte[] privateKeyFixedLength = new byte[KyberParams.Kyber512SKBytes];
-            MessageDigest md = MessageDigest.getInstance("SHA3-256");
+            byte[] privateKeyFixedLength = new byte[KyberParams.KYBER_512SK_BYTES];
+
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] encodedHash = md.digest(packedPublicKey);
             byte[] pkh = new byte[encodedHash.length];
             System.arraycopy(encodedHash, 0, pkh, 0, encodedHash.length);
-            byte[] rnd = new byte[KyberParams.paramsSymBytes];
-            rand.nextBytes(rnd);
+            byte[] rnd = new byte[KyberParams.PARAMS_SYM_BYTES];
+            random.nextBytes(rnd);
             int offsetEnd = packedPrivateKey.length;
             System.arraycopy(packedPrivateKey, 0, privateKeyFixedLength, 0, offsetEnd);
             System.arraycopy(packedPublicKey, 0, privateKeyFixedLength, offsetEnd, packedPublicKey.length);
@@ -46,11 +47,11 @@ public class Kyber512KeyPairGenerator extends KeyPairGeneratorSpi {
             offsetEnd += pkh.length;
             System.arraycopy(rnd, 0, privateKeyFixedLength, offsetEnd, rnd.length);
 
-            return new KyberPKI(new KyberPublicKey(packedPublicKey, null, null), new KyberPrivateKey(privateKeyFixedLength, null, null));
-            /*
+            return new KyberPKI(new KyberPublicKey(packedPublicKey), new KyberPrivateKey(privateKeyFixedLength));
+
         }catch(Exception ex){
-            System.out.println("generateKeys512 Exception! [" + ex.getMessage() + "]");
             ex.printStackTrace();
-        }*/
+            throw new RuntimeException("generateKeys512 Exception! [" + ex.getMessage() + "]");
+        }
     }
 }

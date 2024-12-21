@@ -1,6 +1,6 @@
 package org.sectorrent.jlibcrypto.sphincs.utils;
 
-import org.sectorrent.jlibcrypto.hash.SHA256;
+import org.sectorrent.jlibcrypto.hash.SHA2_256;
 
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusParams.*;
 import static org.sectorrent.jlibcrypto.sphincs.SphincsPlusParams.SPX_N;
@@ -50,7 +50,7 @@ public class AddressUtils {
         System.arraycopy(ByteUtils.intsToBytes(addr, SPX_SHA256_ADDR_BYTES), 0, buf, 0, SPX_SHA256_ADDR_BYTES);
         System.arraycopy(ctx.getSkSeed(), 0, buf, SPX_SHA256_ADDR_BYTES, SPX_N);
 
-        SHA256 res = new SHA256(sha2State, 64);
+        SHA2_256 res = new SHA2_256(sha2State, 64);
         res.update(buf);
         byte[] state = res.digest();
 

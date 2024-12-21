@@ -1,6 +1,6 @@
 package org.sectorrent.jlibcrypto.sphincs.utils;
 
-import org.sectorrent.jlibcrypto.hash.SHA256;
+import org.sectorrent.jlibcrypto.hash.SHA2_256;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -63,7 +63,7 @@ public class TreeHash {
             buf[SPX_N+SPX_SHA256_ADDR_BYTES+i] = (byte)(in[inOffset+i] ^ bitmask[i]);
         }
 
-        SHA256 res = new SHA256(sha2State, 64);
+        SHA2_256 res = new SHA2_256(sha2State, 64);
         res.update(buf, SPX_N, SPX_SHA256_ADDR_BYTES+inblocks*SPX_N);
         byte[] digest = res.digest();
         System.arraycopy(digest, 0, out, outOffset, SPX_N);
@@ -117,7 +117,7 @@ public class TreeHash {
             ByteUtils.u32ToBytes(inbuf, inlen, i);
 
             try{
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                MessageDigest md = MessageDigest.getInstance("SHA2-256");
                 md.update(inbuf);
                 byte[] res = md.digest();
                 System.arraycopy(res, 0, outbuf, 0, res.length);

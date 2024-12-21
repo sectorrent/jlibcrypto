@@ -181,7 +181,6 @@ public class Poly {
      * @param paramsK
      * @return
      */
-    /*
     public static short[] getNoisePoly(byte[] seed, byte nonce, int paramsK) {
         int l;
         byte[] p;
@@ -195,7 +194,7 @@ public class Poly {
 
         p = Indcpa.generatePRFByteArray(l, seed, nonce);
         return ByteUtils.generateCBDPoly(p, paramsK);
-    }*/
+    }
 
     /**
      * Computes an in-place negacyclic number-theoretic transform (NTT) of a
