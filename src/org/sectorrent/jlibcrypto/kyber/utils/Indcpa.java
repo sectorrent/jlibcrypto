@@ -1,5 +1,6 @@
 package org.sectorrent.jlibcrypto.kyber.utils;
 
+import org.sectorrent.jlibcrypto.hash.SHAKE128;
 import org.sectorrent.jlibcrypto.kyber.KyberParams;
 
 import java.security.MessageDigest;
@@ -185,25 +186,39 @@ public class Indcpa {
         short[][][] r = new short[paramsK][paramsK][KyberParams.PARAMS_POLY_BYTES];
         byte[] buf = new byte[672];
         KyberUniformRandom uniformRandom = new KyberUniformRandom();
-        KeccakSponge xof = new Shake128();
+        //KeccakSponge xof = new Shake128();
+        SHAKE128 xof = new SHAKE128();
+        byte[] s = new byte[seed.length+2];
+        System.arraycopy(seed, 0, s, 0, seed.length);
+
         for (int i = 0; i < paramsK; i++) {
             r[i] = Poly.generateNewPolyVector(paramsK);
             for (int j = 0; j < paramsK; j++) {
-                xof.reset();
-                xof.getAbsorbStream().write(seed);
-                byte[] ij = new byte[2];
+                //xof.reset();
+                //xof.getAbsorbStream().write(seed);
+
+                //byte[] ij = new byte[2];
                 if (transposed) {
-                    ij[0] = (byte) i;
-                    ij[1] = (byte) j;
+                    //ij[0] = (byte) i;
+                    //ij[1] = (byte) j;
+                    s[seed.length-2] = (byte) i;
+                    s[seed.length-1] = (byte) j;
+
                 } else {
-                    ij[0] = (byte) j;
-                    ij[1] = (byte) i;
+                    //ij[0] = (byte) j;
+                    //ij[1] = (byte) i;
+                    s[seed.length-2] = (byte) j;
+                    s[seed.length-1] = (byte) i;
                 }
-                xof.getAbsorbStream().write(ij);
-                xof.getSqueezeStream().read(buf);
+
+                buf = xof.getHash(32, s);
+
+                //xof.getAbsorbStream().write(ij);
+                //xof.getSqueezeStream().read(buf);
                 generateUniform(uniformRandom, Arrays.copyOfRange(buf, 0, 504), 504, KyberParams.PARAMS_N);
                 int ui = uniformRandom.getUniformI();
                 r[i][j] = uniformRandom.getUniformR();
+
                 while (ui < KyberParams.paramsN) {
                     generateUniform(uniformRandom, Arrays.copyOfRange(buf, 504, 672), 168, KyberParams.PARAMS_N - ui);
                     int ctrn = uniformRandom.getUniformI();
