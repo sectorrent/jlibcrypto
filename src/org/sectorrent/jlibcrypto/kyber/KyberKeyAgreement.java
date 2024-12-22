@@ -1,5 +1,6 @@
 package org.sectorrent.jlibcrypto.kyber;
 
+import org.sectorrent.jlibcrypto.hash.SHAKE_256;
 import org.sectorrent.jlibcrypto.kyber.utils.Indcpa;
 
 import javax.crypto.KeyAgreementSpi;
@@ -334,9 +335,10 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] tempBuf = new byte[KyberParams.PARAMS_SYM_BYTES + krh.length];
         System.arraycopy(kr, 0, tempBuf, 0, KyberParams.PARAMS_SYM_BYTES);
         System.arraycopy(krh, 0, tempBuf, KyberParams.PARAMS_SYM_BYTES, krh.length);
-        KeccakSponge xof = new Shake256();
-        xof.getAbsorbStream().write(tempBuf);
-        xof.getSqueezeStream().read(sharedSecretFixedLength);
+        //KeccakSponge xof = new Shake256();
+        //xof.getAbsorbStream().write(tempBuf);
+        //xof.getSqueezeStream().read(sharedSecretFixedLength);
+        sharedSecretFixedLength = SHAKE_256.getHash(sharedSecretFixedLength.length, tempBuf);
 
         return new KyberDecrypted(new KyberSecretKey(sharedSecretFixedLength, null, null), new KyberVariant(buf));
     }
@@ -380,9 +382,10 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] tempBuf = new byte[KyberParams.PARAMS_SYM_BYTES + krh.length];
         System.arraycopy(kr, 0, tempBuf, 0, KyberParams.PARAMS_SYM_BYTES);
         System.arraycopy(krh, 0, tempBuf, KyberParams.PARAMS_SYM_BYTES, krh.length);
-        KeccakSponge xof = new Shake256();
-        xof.getAbsorbStream().write(tempBuf);
-        xof.getSqueezeStream().read(sharedSecretFixedLength);
+        //KeccakSponge xof = new Shake256();
+        //xof.getAbsorbStream().write(tempBuf);
+        //xof.getSqueezeStream().read(sharedSecretFixedLength);
+        sharedSecretFixedLength = SHAKE_256.getHash(sharedSecretFixedLength.length, tempBuf);
 
         return new KyberDecrypted(new KyberSecretKey(sharedSecretFixedLength, null, null), new KyberVariant(buf));
     }
@@ -427,9 +430,10 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] tempBuf = new byte[KyberParams.PARAMS_SYM_BYTES + krh.length];
         System.arraycopy(kr, 0, tempBuf, 0, KyberParams.PARAMS_SYM_BYTES);
         System.arraycopy(krh, 0, tempBuf, KyberParams.PARAMS_SYM_BYTES, krh.length);
-        KeccakSponge xof = new Shake256();
-        xof.getAbsorbStream().write(tempBuf);
-        xof.getSqueezeStream().read(sharedSecretFixedLength);
+        //KeccakSponge xof = new Shake256();
+        //xof.getAbsorbStream().write(tempBuf);
+        //xof.getSqueezeStream().read(sharedSecretFixedLength);
+        sharedSecretFixedLength = SHAKE_256.getHash(sharedSecretFixedLength.length, tempBuf);
 
         return new KyberDecrypted(new KyberSecretKey(sharedSecretFixedLength, null, null), new KyberVariant(buf));
     }
@@ -486,9 +490,11 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] newKr = new byte[KyberParams.PARAMS_SYM_BYTES + krc.length];
         System.arraycopy(kr, 0, newKr, 0, KyberParams.PARAMS_SYM_BYTES);
         System.arraycopy(krc, 0, newKr, KyberParams.PARAMS_SYM_BYTES, krc.length);
-        KeccakSponge xof = new Shake256();
-        xof.getAbsorbStream().write(newKr);
-        xof.getSqueezeStream().read(sharedSecret);
+        //KeccakSponge xof = new Shake256();
+        //xof.getAbsorbStream().write(newKr);
+        //xof.getSqueezeStream().read(sharedSecret);
+        sharedSecret = SHAKE_256.getHash(sharedSecret.length, newKr);
+
         //     System.arraycopy(ciphertext, 0, ciphertextFixedLength, 0, ciphertext.length);
         //   System.arraycopy(sharedSecret, 0, sharedSecretFixedLength, 0, sharedSecret.length);
         msg.setCipherText(new KyberCipherText(ciphertext, null, null));
@@ -525,9 +531,11 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] newKr = new byte[KyberParams.PARAMS_SYM_BYTES + krc.length];
         System.arraycopy(kr, 0, newKr, 0, KyberParams.PARAMS_SYM_BYTES);
         System.arraycopy(krc, 0, newKr, KyberParams.PARAMS_SYM_BYTES, krc.length);
-        KeccakSponge xof = new Shake256();
-        xof.getAbsorbStream().write(newKr);
-        xof.getSqueezeStream().read(sharedSecret);
+        //KeccakSponge xof = new Shake256();
+        //xof.getAbsorbStream().write(newKr);
+        //xof.getSqueezeStream().read(sharedSecret);
+        sharedSecret = SHAKE_256.getHash(sharedSecret.length, newKr);
+
         //      System.arraycopy(ciphertext, 0, ciphertextFixedLength, 0, ciphertext.length);
         //    System.arraycopy(sharedSecret, 0, sharedSecretFixedLength, 0, sharedSecret.length);
         msg.setCipherText(new KyberCipherText(ciphertext, null, null));
@@ -564,9 +572,11 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] newKr = new byte[KyberParams.PARAMS_SYM_BYTES + krc.length];
         System.arraycopy(kr, 0, newKr, 0, KyberParams.PARAMS_SYM_BYTES);
         System.arraycopy(krc, 0, newKr, KyberParams.PARAMS_SYM_BYTES, krc.length);
-        KeccakSponge xof = new Shake256();
-        xof.getAbsorbStream().write(newKr);
-        xof.getSqueezeStream().read(sharedSecret);
+        //KeccakSponge xof = new Shake256();
+        //xof.getAbsorbStream().write(newKr);
+        //xof.getSqueezeStream().read(sharedSecret);
+        sharedSecret = SHAKE_256.getHash(sharedSecret.length, newKr);
+
         //       System.arraycopy(ciphertext, 0, ciphertextFixedLength, 0, ciphertext.length);
         //     System.arraycopy(sharedSecret, 0, sharedSecretFixedLength, 0, sharedSecret.length);
         msg.setCipherText(new KyberCipherText(ciphertext, null, null));
