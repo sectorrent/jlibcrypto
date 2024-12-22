@@ -31,13 +31,13 @@ public class KyberEncrypted implements Key {
      * @throws InvalidKeyException
      */
     public KyberEncrypted(byte[] encodedBytes) throws InvalidKeyException {
-        byte[] encodedSecret = new byte[KyberParams.KyberEncodedSSBytes];
-        System.arraycopy(encodedBytes, 0, encodedSecret, 0, KyberParams.KyberEncodedSSBytes);
+        byte[] encodedSecret = new byte[KyberParams.KYBER_ENCODED_SS_BYTES];
+        System.arraycopy(encodedBytes, 0, encodedSecret, 0, KyberParams.KYBER_ENCODED_SS_BYTES);
         this.secretKey = new KyberSecretKey(encodedSecret);
 
-        int cipherLen = encodedBytes.length - KyberParams.KyberEncodedSSBytes;
+        int cipherLen = encodedBytes.length - KyberParams.KYBER_ENCODED_SS_BYTES;
         byte[] encodedCipher = new byte[cipherLen];
-        System.arraycopy(encodedBytes, KyberParams.KyberEncodedSSBytes, encodedCipher, 0, cipherLen);
+        System.arraycopy(encodedBytes, KyberParams.KYBER_ENCODED_SS_BYTES, encodedCipher, 0, cipherLen);
         this.cipherText = new KyberCipherText(encodedCipher);
     }
 

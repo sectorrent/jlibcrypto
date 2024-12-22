@@ -174,7 +174,7 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
             } else {
                 return null;
             }
-        } else if (key instanceof com.swiftcryptollc.crypto.provider.KyberCipherText) {
+        } else if (key instanceof KyberCipherText) {
             try {
                 return decrypt(kyberKeySize, (KyberCipherText) key);
             } catch (NoSuchAlgorithmException e) {
@@ -245,7 +245,7 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] tempSecret = kyberEncrypted.getSecretKey().getS();
         System.arraycopy(tempSecret, 0, sharedSecret, 0, tempSecret.length);
         kyberCipherText = kyberEncrypted.getCipherText();
-        return KyberParams.paramsSymBytes;
+        return KyberParams.PARAMS_SYM_BYTES;
     }
 
     /**
@@ -307,11 +307,11 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] ciphertext = kyberCiphertext.getC();
         byte[] privateKey = this.x;
         int paramsK = 2;
-        byte[] sharedSecretFixedLength = new byte[KyberParams.KyberSSBytes];
-        byte[] indcpaPrivateKey = new byte[KyberParams.paramsIndcpaSecretKeyBytesK512];
+        byte[] sharedSecretFixedLength = new byte[KyberParams.KYBER_SS_BYTES];
+        byte[] indcpaPrivateKey = new byte[KyberParams.PARAMS_INDCPA_SECRET_KEY_BYTES_K512];
         System.arraycopy(privateKey, 0, indcpaPrivateKey, 0, indcpaPrivateKey.length);
-        byte[] publicKey = new byte[KyberParams.paramsIndcpaPublicKeyBytesK512];
-        System.arraycopy(privateKey, KyberParams.paramsIndcpaSecretKeyBytesK512, publicKey, 0, publicKey.length);
+        byte[] publicKey = new byte[KyberParams.PARAMS_INDCPA_PUBLIC_KEY_BYTES_K512];
+        System.arraycopy(privateKey, KyberParams.PARAMS_INDCPA_SECRET_KEY_BYTES_K512, publicKey, 0, publicKey.length);
 
         byte[] buf = Indcpa.decrypt(ciphertext, indcpaPrivateKey, paramsK);
         int ski = KyberParams.KYBER_512SK_BYTES - 2 * KyberParams.PARAMS_SYM_BYTES;
@@ -351,14 +351,14 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] ciphertext = kyberCiphertext.getC();
         byte[] privateKey = this.x;
         int paramsK = 3;
-        byte[] sharedSecretFixedLength = new byte[KyberParams.KyberSSBytes];
-        byte[] indcpaPrivateKey = new byte[KyberParams.paramsIndcpaSecretKeyBytesK768];
+        byte[] sharedSecretFixedLength = new byte[KyberParams.KYBER_SS_BYTES];
+        byte[] indcpaPrivateKey = new byte[KyberParams.PARAMS_INDCPA_SECRET_KEY_BYTES_K768];
         System.arraycopy(privateKey, 0, indcpaPrivateKey, 0, indcpaPrivateKey.length);
-        byte[] publicKey = new byte[KyberParams.paramsIndcpaPublicKeyBytesK768];
-        System.arraycopy(privateKey, KyberParams.paramsIndcpaSecretKeyBytesK768, publicKey, 0, publicKey.length);
+        byte[] publicKey = new byte[KyberParams.PARAMS_INDCPA_PUBLIC_KEY_BYTES_K768];
+        System.arraycopy(privateKey, KyberParams.PARAMS_INDCPA_SECRET_KEY_BYTES_K768, publicKey, 0, publicKey.length);
 
         byte[] buf = Indcpa.decrypt(ciphertext, indcpaPrivateKey, paramsK);
-        int ski = KyberParams.Kyber768SKBytes - 2 * KyberParams.PARAMS_SYM_BYTES;
+        int ski = KyberParams.KYBER_768SK_BYTES - 2 * KyberParams.PARAMS_SYM_BYTES;
         byte[] newBuf = new byte[buf.length + KyberParams.PARAMS_SYM_BYTES];
         System.arraycopy(buf, 0, newBuf, 0, buf.length);
         System.arraycopy(privateKey, ski, newBuf, buf.length, KyberParams.PARAMS_SYM_BYTES);
@@ -372,7 +372,7 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         // worked or not.
         MessageDigest md = MessageDigest.getInstance("SHA3-256");
         byte[] krh = md.digest(ciphertext);
-        int index = KyberParams.Kyber768SKBytes - KyberParams.PARAMS_SYM_BYTES;
+        int index = KyberParams.KYBER_768SK_BYTES - KyberParams.PARAMS_SYM_BYTES;
         for (int i = 0; i < KyberParams.PARAMS_SYM_BYTES; i++) {
             kr[i] = (byte) ((int) (kr[i] & 0xFF) ^ ((int) (fail & 0xFF) & ((int) (kr[i] & 0xFF) ^ (int) (privateKey[index] & 0xFF))));
             index += 1;
@@ -398,14 +398,14 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         byte[] ciphertext = kyberCiphertext.getC();
         byte[] privateKey = this.x;
         int paramsK = 4;
-        byte[] sharedSecretFixedLength = new byte[KyberParams.KyberSSBytes];
-        byte[] indcpaPrivateKey = new byte[KyberParams.paramsIndcpaSecretKeyBytesK1024];
+        byte[] sharedSecretFixedLength = new byte[KyberParams.KYBER_SS_BYTES];
+        byte[] indcpaPrivateKey = new byte[KyberParams.PARAMS_INDCPA_SECRET_KEY_BYTES_K1024];
         System.arraycopy(privateKey, 0, indcpaPrivateKey, 0, indcpaPrivateKey.length);
-        byte[] publicKey = new byte[KyberParams.paramsIndcpaPublicKeyBytesK1024];
-        System.arraycopy(privateKey, KyberParams.paramsIndcpaSecretKeyBytesK1024, publicKey, 0, publicKey.length);
+        byte[] publicKey = new byte[KyberParams.PARAMS_INDCPA_PUBLIC_KEY_BYTES_K1024];
+        System.arraycopy(privateKey, KyberParams.PARAMS_INDCPA_SECRET_KEY_BYTES_K1024, publicKey, 0, publicKey.length);
 
         byte[] buf = Indcpa.decrypt(ciphertext, indcpaPrivateKey, paramsK);
-        int ski = KyberParams.Kyber1024SKBytes - 2 * KyberParams.PARAMS_SYM_BYTES;
+        int ski = KyberParams.KYBER_1024SK_BYTES - 2 * KyberParams.PARAMS_SYM_BYTES;
         byte[] newBuf = new byte[buf.length + KyberParams.PARAMS_SYM_BYTES];
         System.arraycopy(buf, 0, newBuf, 0, buf.length);
         System.arraycopy(privateKey, ski, newBuf, buf.length, KyberParams.PARAMS_SYM_BYTES);
@@ -419,7 +419,7 @@ public class KyberKeyAgreement extends KeyAgreementSpi {
         // worked or not.
         MessageDigest md = MessageDigest.getInstance("SHA3-256");
         byte[] krh = md.digest(ciphertext);
-        int index = KyberParams.Kyber1024SKBytes - KyberParams.PARAMS_SYM_BYTES;
+        int index = KyberParams.KYBER_1024SK_BYTES - KyberParams.PARAMS_SYM_BYTES;
         for (int i = 0; i < KyberParams.PARAMS_SYM_BYTES; i++) {
             kr[i] = (byte) ((int) (kr[i] & 0xFF) ^ ((int) (fail & 0xFF) & ((int) (kr[i] & 0xFF) ^ (int) (privateKey[index] & 0xFF))));
             index += 1;
