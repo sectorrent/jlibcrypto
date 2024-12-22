@@ -5,6 +5,10 @@ import java.util.Arrays;
 
 public class Main {
 
+    //Make sure to encode Kyber keys correctly
+    //Work on encrypt / decrypt function for Kyber
+    //Major cleanup
+
     public static void main(String[] args){
         Security.addProvider(new STProvider());
 
