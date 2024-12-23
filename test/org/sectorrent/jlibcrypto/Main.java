@@ -13,15 +13,16 @@ public class Main {
         Security.addProvider(new STProvider());
 
         try{
+            /*
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("Kyber512");
             keyGen.initialize(512);
             KeyPair keyPair = keyGen.generateKeyPair();
 
             System.out.println("SK: "+bytesToHex(keyPair.getPrivate().getEncoded()));
             System.out.println("PK: "+bytesToHex(keyPair.getPublic().getEncoded()));
+            */
 
 
-            /*
             // Generate a key pair
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("SphincsPlus");
             keyGen.initialize(256);
@@ -46,7 +47,6 @@ public class Main {
             signature.update(message);
 
             System.out.println("SIGNATURE VERIFIED: "+signature.verify(signed));
-            */
 
         }catch(Exception e){
             e.printStackTrace();
